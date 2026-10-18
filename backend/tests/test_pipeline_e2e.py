@@ -63,5 +63,7 @@ def test_sample_inspection_end_to_end(client, demo_dir):
     cmp_ = client.get(f"/api/v1/inspections/{insp['id']}/compare").json()
     counts = cmp_["summary"]["counts"]
     assert counts.get("resolved", 0) >= 2
+    # v2 ground truth contains no new discrepancies: any new FAIL would be a false alarm
+    assert counts.get("new_discrepancy", 0) == 0, [i for i in cmp_["items"] if i["category"] == "new_discrepancy"]
     v1_after = client.get(f"/api/v1/versions/{vid}/findings").json()["items"]
     assert {f["id"]: f["verdict"] for f in v1_after} == {f["id"]: f["verdict"] for f in items}

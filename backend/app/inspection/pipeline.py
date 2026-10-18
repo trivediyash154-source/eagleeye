@@ -491,12 +491,19 @@ class PipelineRunner:
         good = [v for v in variants if v.get("normalized")]
         if not good:
             return None
-        best = max(good, key=lambda v: v["confidence"])
+        # Consensus across preprocessing variants (independent of the expected value): the reading
+        # produced by most variants wins; ties are broken by OCR confidence.
+        groups: dict[str, list[dict]] = {}
+        for v in good:
+            groups.setdefault(v["normalized"], []).append(v)
+        winner = max(groups.values(), key=lambda g: (len(g), max(x["confidence"] for x in g)))
+        best = max(winner, key=lambda v: v["confidence"])
         b = best.get("box") or [0, 0, crop.shape[1], crop.shape[0]]
         gbox = [cbox[0] + b[0], cbox[1] + b[1], cbox[0] + b[2], cbox[1] + b[3]]
         alts = [{"variant": v["variant"], "text": v.get("text"), "normalized": v.get("normalized"), "confidence": v.get("confidence")} for v in variants if v is not best]
         return {"raw": best["text"], "norm": best["normalized"], "steps": best["steps"], "conf": float(best["confidence"]), "box": gbox,
-                "poly": [[gbox[0], gbox[1]], [gbox[2], gbox[1]], [gbox[2], gbox[3]], [gbox[0], gbox[3]]], "variant": best["variant"], "alts": alts, "det": None}
+                "poly": [[gbox[0], gbox[1]], [gbox[2], gbox[1]], [gbox[2], gbox[3]], [gbox[0], gbox[3]]],
+                "variant": f"{best['variant']} (consensus {len(winner)}/{len(good)})", "alts": alts, "det": None}
 
     def stage_registration(self, st: RunState) -> dict:
         manual = st.config.get("manual_anchors")
@@ -544,7 +551,7 @@ class PipelineRunner:
         comps = self.db.scalars(select(ExpectedComponent).where(ExpectedComponent.version_id == vid)).all()
         idents = self.db.scalars(select(ExpectedIdentifier).where(ExpectedIdentifier.version_id == vid)).all()
         dets = [ObsDet(d.id, d.class_name, d.confidence, (d.x0, d.y0, d.x1, d.y1), d.above_threshold) for d in self.db.scalars(select(Detection).where(Detection.version_id == vid))]
-        texts = [ObsText(o.id, o.raw_text, o.normalized_text, o.confidence, (o.x0, o.y0, o.x1, o.y1), o.region, o.variant)
+        texts = [ObsText(o.id, o.raw_text, o.normalized_text, o.confidence, (o.x0, o.y0, o.x1, o.y1), o.region, o.variant, *reading_support(o.normalized_text, o.alternatives))
                  for o in self.db.scalars(select(OcrObservation).where(OcrObservation.version_id == vid))]
         reg = st.registration or RegistrationResult("unavailable", None, None, reasons=["registration stage did not run"])
         targeted = {"count": 0}
@@ -560,7 +567,7 @@ class PipelineRunner:
                                  region="targeted_crop", variant=reading["variant"], alternatives=reading["alts"] + [{"purpose": purpose}], engine=get_ocr().engine.name)
             self.db.add(row)
             self.db.flush()
-            t = ObsText(row.id, row.raw_text, row.normalized_text, row.confidence, (row.x0, row.y0, row.x1, row.y1), "targeted_crop", row.variant)
+            t = ObsText(row.id, row.raw_text, row.normalized_text, row.confidence, (row.x0, row.y0, row.x1, row.y1), "targeted_crop", row.variant, *reading_support(row.normalized_text, row.alternatives))
             texts.append(t)
             return t
 
@@ -635,6 +642,12 @@ class PipelineRunner:
         self.db.flush()
         rep = generate_pdf_report(self.db, st.version.id)
         return {"message": f"PDF report generated ({rep.pages} pages, {rep.size_bytes // 1024} KB)", "details": {"report_id": rep.id, "pages": rep.pages}}
+
+
+def reading_support(norm: str, alternatives: list | None) -> tuple[int, int]:
+    """(agreeing readings, total readings) for one text region, counting the selected reading itself."""
+    others = [a.get("normalized") for a in (alternatives or []) if isinstance(a, dict) and a.get("normalized")]
+    return 1 + sum(1 for x in others if x == norm), 1 + len(others)
 
 
 def dedupe_observations(obs: list[dict]) -> list[dict]:

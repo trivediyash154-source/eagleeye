@@ -1,0 +1,24 @@
+# Versions verified in the build environment (Python 3.11, CPU).
+fastapi==0.146.0
+uvicorn[standard]==0.54.0
+sqlalchemy==2.1.5
+alembic==1.20.0
+pydantic==2.14.1
+pydantic-settings==2.16.0
+python-multipart==0.0.32
+opencv-python-headless==5.0.0.93
+numpy==2.2.6
+pillow==13.0.0
+pymupdf==1.28.2
+pandas==3.0.6
+openpyxl==3.1.5
+xlrd==2.0.2
+rapidfuzz==3.14.6
+reportlab==5.0.1
+psycopg[binary]==3.3.6
+ultralytics==8.4.182
+easyocr==1.7.2
+torch==2.14.1
+torchvision==0.29.1
+# Optional: PaddleOCR (preferred engine when its models can be downloaded)
+#   pip install paddlepaddle paddleocr

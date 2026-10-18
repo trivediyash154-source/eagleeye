@@ -5,7 +5,8 @@ Two policies are available per identifier type:
 ``confusion_aware`` (default)
     exact normalised match with adequate OCR confidence ........ PASS
     all differences are OCR-confusable substitutions (8/B, 0/O) . UNCERTAIN (possible misread)
-    any non-confusable edit, reliable OCR, reliable association . FAIL
+    any non-confusable edit, reliable OCR, reliable association,
+    and the reading corroborated by another reading of the region  FAIL
     anything else ............................................... UNCERTAIN
 
 ``distance_bands`` (the original slide-deck rule)
@@ -84,7 +85,9 @@ class Decision:
 
 
 def decide_identifier(kind: str, expected: str, observed: str | None, ocr_conf: float | None, association_reliable: bool,
-                      association_note: str, policy: dict | None = None) -> Decision:
+                      association_note: str, policy: dict | None = None, support: tuple[int, int] | None = None) -> Decision:
+    """support = (agreeing readings, total readings) of the observed region; a mismatch is only
+    confirmed (FAIL) when the reading is corroborated by at least one other independent reading."""
     p = {**DEFAULT_POLICY, **(policy or {})}
     noun = "ferrule" if kind == "ferrule" else "device label"
     if observed is None or observed == "":
@@ -110,6 +113,8 @@ def decide_identifier(kind: str, expected: str, observed: str | None, ocr_conf: 
         return Decision("UNCERTAIN", "confusable_characters", f"Observed '{cmp_.observed}' differs from expected '{cmp_.expected}' only by visually confusable characters ({diff_txt}). This may be an OCR misread or a misprinted {noun}; human review required.", ["confusable_characters"], cmp_)
     if conf < p["min_ocr_conf_fail"]:
         return Decision("UNCERTAIN", "mismatch_low_confidence", f"Observed '{cmp_.observed}' differs from expected '{cmp_.expected}' (d={cmp_.distance}: {diff_txt}) but OCR confidence {conf:.2f} is below the {p['min_ocr_conf_fail']} required to confirm a mismatch.", ["low_ocr_confidence"], cmp_)
+    if support is not None and support[1] >= 2 and support[0] < 2:
+        return Decision("UNCERTAIN", "unstable_reading", f"Read '{cmp_.observed}' (expected '{cmp_.expected}', d={cmp_.distance}: {diff_txt}), but none of the other {support[1] - 1} reading(s) of the same region agree, so the mismatch is not confirmed.", ["conflicting_observations"], cmp_)
     if not association_reliable:
         return Decision("UNCERTAIN", "mismatch_unverified_position", f"A differing text '{cmp_.observed}' was read near the expected position, but the association is not reliable enough to confirm a mismatch. {association_note}".strip(), ["ambiguous_association"], cmp_)
     return Decision("FAIL", "identifier_mismatch", f"Expected {noun} '{cmp_.expected}' but read '{cmp_.observed}' (Levenshtein d={cmp_.distance}: {diff_txt}) with OCR confidence {conf:.2f}. {association_note}".strip(), [], cmp_)

@@ -60,3 +60,11 @@ def test_compare_edit_ops():
     c = compare("PS12", "PS21")
     assert c.distance == 2
     assert not c.confusable_only
+
+
+def test_unstable_reading_blocks_fail():
+    # one variant read X1Z-JA, the other three readings disagree with it
+    d = decide_identifier("ferrule", "X12-1A", "X1Z-JA", 0.79, True, "", support=(1, 4))
+    assert d.verdict == "UNCERTAIN" and d.rule == "unstable_reading"
+    d2 = decide_identifier("ferrule", "X12-4B", "X12-8B", 0.99, True, "", support=(3, 4))
+    assert d2.verdict == "FAIL"

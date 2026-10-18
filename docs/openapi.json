@@ -1,0 +1,4680 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "EAGLE EYE API",
+  "description": "Drawing-aware industrial cabinet inspection: uploads, pipeline jobs, findings, evidence, reviews, versioning, reports and diagnostics.",
+  "version": "1.0.0"
+ },
+ "paths": {
+  "/api/v1/health": {
+   "get": {
+    "tags": [
+     "system"
+    ],
+    "summary": "Liveness probe",
+    "operationId": "health_api_v1_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/system/status": {
+   "get": {
+    "tags": [
+     "system"
+    ],
+    "summary": "Readiness of every subsystem (real checks)",
+    "operationId": "system_status_api_v1_system_status_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/system/diagnostics": {
+   "get": {
+    "tags": [
+     "system"
+    ],
+    "summary": "Detector, OCR and pipeline diagnostics",
+    "operationId": "system_diagnostics_api_v1_system_diagnostics_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/system/models/load": {
+   "post": {
+    "tags": [
+     "system"
+    ],
+    "summary": "Load detector and OCR models now",
+    "operationId": "load_models_api_v1_system_models_load_post",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/system/logs": {
+   "get": {
+    "tags": [
+     "system"
+    ],
+    "summary": "Recent structured operational events (redacted)",
+    "operationId": "logs_api_v1_system_logs_get",
+    "parameters": [
+     {
+      "name": "level",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Level"
+      }
+     },
+     {
+      "name": "component",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Component"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "default": 200,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/system/checks": {
+   "get": {
+    "tags": [
+     "system"
+    ],
+    "summary": "Inspection checks and their availability with the loaded models",
+    "operationId": "checks_api_v1_system_checks_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/system/diagnostics/detector-test": {
+   "post": {
+    "tags": [
+     "system"
+    ],
+    "summary": "Run the loaded detector on a test image",
+    "operationId": "detector_test_api_v1_system_diagnostics_detector_test_post",
+    "requestBody": {
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_detector_test_api_v1_system_diagnostics_detector_test_post"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/system/diagnostics/ocr-test": {
+   "post": {
+    "tags": [
+     "system"
+    ],
+    "summary": "Run the OCR engine on a test image",
+    "operationId": "ocr_test_api_v1_system_diagnostics_ocr_test_post",
+    "requestBody": {
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_ocr_test_api_v1_system_diagnostics_ocr_test_post"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/inspections": {
+   "post": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Create an inspection case (version 1 in draft)",
+    "operationId": "create_inspection_api_v1_inspections_post",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/InspectionCreate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/InspectionDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "List inspections with search, filters, sorting and pagination",
+    "operationId": "list_inspections_api_v1_inspections_get",
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Q"
+      }
+     },
+     {
+      "name": "dataset",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(all|real|demo)$",
+       "default": "all",
+       "title": "Dataset"
+      }
+     },
+     {
+      "name": "status",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Status"
+      }
+     },
+     {
+      "name": "verdict",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Verdict"
+      }
+     },
+     {
+      "name": "date_from",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Date From"
+      }
+     },
+     {
+      "name": "date_to",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Date To"
+      }
+     },
+     {
+      "name": "sort",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(created_at|code|cabinet_id|title|status)$",
+       "default": "created_at",
+       "title": "Sort"
+      }
+     },
+     {
+      "name": "order",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(asc|desc)$",
+       "default": "desc",
+       "title": "Order"
+      }
+     },
+     {
+      "name": "page",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "minimum": 1,
+       "default": 1,
+       "title": "Page"
+      }
+     },
+     {
+      "name": "page_size",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 100,
+       "minimum": 1,
+       "default": 20,
+       "title": "Page Size"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/InspectionList"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/inspections/{inspection_id}": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Get Inspection",
+    "operationId": "get_inspection_api_v1_inspections__inspection_id__get",
+    "parameters": [
+     {
+      "name": "inspection_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Inspection Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/InspectionDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Update Inspection",
+    "operationId": "update_inspection_api_v1_inspections__inspection_id__patch",
+    "parameters": [
+     {
+      "name": "inspection_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Inspection Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/InspectionUpdate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/InspectionDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/inspections/{inspection_id}/timeline": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Audit trail for the inspection",
+    "operationId": "timeline_api_v1_inspections__inspection_id__timeline_get",
+    "parameters": [
+     {
+      "name": "inspection_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Inspection Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/inspections/{inspection_id}/reinspect": {
+   "post": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Create a new version; earlier versions stay intact",
+    "operationId": "reinspect_api_v1_inspections__inspection_id__reinspect_post",
+    "parameters": [
+     {
+      "name": "inspection_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Inspection Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_reinspect_api_v1_inspections__inspection_id__reinspect_post"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/VersionOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/inspections/{inspection_id}/compare": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Compare two versions by stable finding keys",
+    "operationId": "compare_api_v1_inspections__inspection_id__compare_get",
+    "parameters": [
+     {
+      "name": "inspection_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Inspection Id"
+      }
+     },
+     {
+      "name": "from_version",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "From Version"
+      }
+     },
+     {
+      "name": "to_version",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "To Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Get Version",
+    "operationId": "get_version_api_v1_versions__version_id__get",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/VersionOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/config": {
+   "patch": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Update checks, page, sheet mapping and thresholds of a draft version",
+    "operationId": "update_config_api_v1_versions__version_id__config_patch",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/VersionConfigUpdate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/VersionOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/assets": {
+   "post": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Upload (or replace) the photo, GA drawing or expected list",
+    "operationId": "upload_asset_api_v1_versions__version_id__assets_post",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_upload_asset_api_v1_versions__version_id__assets_post"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AssetOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/assets/{asset_id}": {
+   "delete": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Delete Asset",
+    "operationId": "delete_asset_api_v1_versions__version_id__assets__asset_id__delete",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     },
+     {
+      "name": "asset_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Asset Id"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/readiness": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Pre-run validation of inputs, models and storage",
+    "operationId": "readiness_api_v1_versions__version_id__readiness_get",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Readiness"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/run": {
+   "post": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Start the inspection pipeline for a version",
+    "operationId": "run_version_api_v1_versions__version_id__run_post",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     }
+    ],
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/JobOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/media": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Key images for a version (original, annotated, overlays, drawing render)",
+    "operationId": "version_media_api_v1_versions__version_id__media_get",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/detections": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Version Detections",
+    "operationId": "version_detections_api_v1_versions__version_id__detections_get",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     },
+     {
+      "name": "include_low",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Include Low"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/ocr": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Version Ocr",
+    "operationId": "version_ocr_api_v1_versions__version_id__ocr_get",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/expected": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Version Expected",
+    "operationId": "version_expected_api_v1_versions__version_id__expected_get",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/drawing": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Parsed drawing, zones, located identifiers and their projection onto the photo",
+    "operationId": "version_drawing_api_v1_versions__version_id__drawing_get",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/zones": {
+   "put": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Correct zone definitions (persisted on the drawing record; applied by the next run)",
+    "operationId": "update_zones_api_v1_versions__version_id__zones_put",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ZonesUpdate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/alignment": {
+   "post": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Manual anchor alignment; for a completed version this creates a new version",
+    "operationId": "manual_alignment_api_v1_versions__version_id__alignment_post",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ManualAlignmentIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/assets/{asset_id}/pdf/pages/{page}/preview": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Render a PDF page preview (PNG)",
+    "operationId": "pdf_preview_api_v1_assets__asset_id__pdf_pages__page__preview_get",
+    "parameters": [
+     {
+      "name": "asset_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Asset Id"
+      }
+     },
+     {
+      "name": "page",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Page"
+      }
+     },
+     {
+      "name": "zoom",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "number",
+       "maximum": 3.0,
+       "minimum": 0.2,
+       "default": 1.0,
+       "title": "Zoom"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/assets/{asset_id}/spreadsheet/preview": {
+   "post": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Parse the expected list with a sheet/column mapping and return records + warnings",
+    "operationId": "spreadsheet_preview_api_v1_assets__asset_id__spreadsheet_preview_post",
+    "parameters": [
+     {
+      "name": "asset_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Asset Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "Body"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/jobs": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Active and recent processing jobs",
+    "operationId": "list_jobs_api_v1_jobs_get",
+    "parameters": [
+     {
+      "name": "active",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Active"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 100,
+       "minimum": 1,
+       "default": 20,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/jobs/{job_id}": {
+   "get": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Get Job",
+    "operationId": "get_job_api_v1_jobs__job_id__get",
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Job Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/JobOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/jobs/{job_id}/cancel": {
+   "post": {
+    "tags": [
+     "inspections"
+    ],
+    "summary": "Request cancellation (honoured between stages)",
+    "operationId": "cancel_job_api_v1_jobs__job_id__cancel_post",
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Job Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/JobOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/findings": {
+   "get": {
+    "tags": [
+     "findings"
+    ],
+    "summary": "Findings of a version with filters",
+    "operationId": "list_findings_api_v1_versions__version_id__findings_get",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     },
+     {
+      "name": "verdict",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Verdict"
+      }
+     },
+     {
+      "name": "effective",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Effective"
+      }
+     },
+     {
+      "name": "check_type",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Check Type"
+      }
+     },
+     {
+      "name": "zone",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Zone"
+      }
+     },
+     {
+      "name": "review",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "pattern": "^(reviewed|unreviewed)$"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Review"
+      }
+     },
+     {
+      "name": "q",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Q"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FindingList"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/findings/{finding_id}": {
+   "get": {
+    "tags": [
+     "findings"
+    ],
+    "summary": "Get Finding",
+    "operationId": "get_finding_api_v1_findings__finding_id__get",
+    "parameters": [
+     {
+      "name": "finding_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Finding Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FindingDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/findings/{finding_id}/reviews": {
+   "post": {
+    "tags": [
+     "findings"
+    ],
+    "summary": "Record a human review decision (machine finding stays unchanged)",
+    "operationId": "add_review_api_v1_findings__finding_id__reviews_post",
+    "parameters": [
+     {
+      "name": "finding_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Finding Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ReviewIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ReviewOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/evidence": {
+   "get": {
+    "tags": [
+     "findings"
+    ],
+    "summary": "Browse evidence assets",
+    "operationId": "list_evidence_api_v1_evidence_get",
+    "parameters": [
+     {
+      "name": "inspection_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Inspection Id"
+      }
+     },
+     {
+      "name": "version_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Version Id"
+      }
+     },
+     {
+      "name": "kind",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Kind"
+      }
+     },
+     {
+      "name": "finding_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Finding Id"
+      }
+     },
+     {
+      "name": "page",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "minimum": 1,
+       "default": 1,
+       "title": "Page"
+      }
+     },
+     {
+      "name": "page_size",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 200,
+       "minimum": 1,
+       "default": 60,
+       "title": "Page Size"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/evidence/{evidence_id}/file": {
+   "get": {
+    "tags": [
+     "findings"
+    ],
+    "summary": "Download/stream an evidence image (thumb=1 for a thumbnail)",
+    "operationId": "evidence_file_api_v1_evidence__evidence_id__file_get",
+    "parameters": [
+     {
+      "name": "evidence_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Evidence Id"
+      }
+     },
+     {
+      "name": "thumb",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Thumb"
+      }
+     },
+     {
+      "name": "download",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Download"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/assets/{asset_id}/file": {
+   "get": {
+    "tags": [
+     "findings"
+    ],
+    "summary": "Download an uploaded input file",
+    "operationId": "asset_file_api_v1_assets__asset_id__file_get",
+    "parameters": [
+     {
+      "name": "asset_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Asset Id"
+      }
+     },
+     {
+      "name": "download",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Download"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/versions/{version_id}/reports": {
+   "post": {
+    "tags": [
+     "findings"
+    ],
+    "summary": "Generate a report/export: pdf | json | csv | xlsx",
+    "operationId": "create_report_api_v1_versions__version_id__reports_post",
+    "parameters": [
+     {
+      "name": "version_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Version Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "Body"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/reports": {
+   "get": {
+    "tags": [
+     "findings"
+    ],
+    "summary": "List generated reports",
+    "operationId": "list_reports_api_v1_reports_get",
+    "parameters": [
+     {
+      "name": "inspection_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Inspection Id"
+      }
+     },
+     {
+      "name": "version_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Version Id"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 500,
+       "minimum": 1,
+       "default": 100,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/reports/{report_id}/download": {
+   "get": {
+    "tags": [
+     "findings"
+    ],
+    "summary": "Download Report",
+    "operationId": "download_report_api_v1_reports__report_id__download_get",
+    "parameters": [
+     {
+      "name": "report_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Report Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/analytics/overview": {
+   "get": {
+    "tags": [
+     "findings"
+    ],
+    "summary": "KPIs and distributions computed from persisted records",
+    "operationId": "analytics_overview_api_v1_analytics_overview_get",
+    "parameters": [
+     {
+      "name": "dataset",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(all|real|demo)$",
+       "default": "all",
+       "title": "Dataset"
+      }
+     },
+     {
+      "name": "date_from",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Date From"
+      }
+     },
+     {
+      "name": "date_to",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Date To"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/analytics/activity": {
+   "get": {
+    "tags": [
+     "findings"
+    ],
+    "summary": "Recent activity feed",
+    "operationId": "analytics_activity_api_v1_analytics_activity_get",
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 100,
+       "minimum": 1,
+       "default": 20,
+       "title": "Limit"
+      }
+     },
+     {
+      "name": "dataset",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(all|real|demo)$",
+       "default": "all",
+       "title": "Dataset"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/review-queue": {
+   "get": {
+    "tags": [
+     "findings"
+    ],
+    "summary": "Findings needing human review, with reasons",
+    "operationId": "review_queue_api_v1_review_queue_get",
+    "parameters": [
+     {
+      "name": "inspection_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Inspection Id"
+      }
+     },
+     {
+      "name": "reason",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Reason"
+      }
+     },
+     {
+      "name": "check_type",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Check Type"
+      }
+     },
+     {
+      "name": "sort",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(tier|newest|inspection)$",
+       "default": "tier",
+       "title": "Sort"
+      }
+     },
+     {
+      "name": "dataset",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(all|real|demo)$",
+       "default": "all",
+       "title": "Dataset"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/demo/fixtures": {
+   "get": {
+    "tags": [
+     "demo"
+    ],
+    "summary": "Bundled synthetic demonstration fixtures",
+    "operationId": "fixtures_api_v1_demo_fixtures_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/demo/fixtures/{name}": {
+   "get": {
+    "tags": [
+     "demo"
+    ],
+    "summary": "Download a fixture file",
+    "operationId": "fixture_file_api_v1_demo_fixtures__name__get",
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Name"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/demo/sample-inspection": {
+   "post": {
+    "tags": [
+     "demo"
+    ],
+    "summary": "Create a demo inspection from fixtures and run the live pipeline",
+    "operationId": "sample_inspection_api_v1_demo_sample_inspection_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SampleInspectionIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/demo/sample-inspection/{inspection_id}/reinspect": {
+   "post": {
+    "tags": [
+     "demo"
+    ],
+    "summary": "Reinspect a demo inspection with the corrected (v2) fixture photo",
+    "operationId": "sample_reinspect_api_v1_demo_sample_inspection__inspection_id__reinspect_post",
+    "parameters": [
+     {
+      "name": "inspection_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Inspection Id"
+      }
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "AnchorPair": {
+    "properties": {
+     "drawing": {
+      "items": {
+       "type": "number"
+      },
+      "type": "array",
+      "maxItems": 2,
+      "minItems": 2,
+      "title": "Drawing"
+     },
+     "photo": {
+      "items": {
+       "type": "number"
+      },
+      "type": "array",
+      "maxItems": 2,
+      "minItems": 2,
+      "title": "Photo"
+     },
+     "label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Label"
+     }
+    },
+    "type": "object",
+    "required": [
+     "drawing",
+     "photo"
+    ],
+    "title": "AnchorPair"
+   },
+   "AssetOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "kind": {
+      "type": "string",
+      "title": "Kind"
+     },
+     "original_filename": {
+      "type": "string",
+      "title": "Original Filename"
+     },
+     "content_type": {
+      "type": "string",
+      "title": "Content Type"
+     },
+     "size_bytes": {
+      "type": "integer",
+      "title": "Size Bytes"
+     },
+     "sha256": {
+      "type": "string",
+      "title": "Sha256"
+     },
+     "analysis": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Analysis"
+     },
+     "created_at": {
+      "type": "string",
+      "title": "Created At"
+     },
+     "inherited": {
+      "type": "boolean",
+      "title": "Inherited"
+     },
+     "download_url": {
+      "type": "string",
+      "title": "Download Url"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "kind",
+     "original_filename",
+     "content_type",
+     "size_bytes",
+     "sha256",
+     "analysis",
+     "created_at",
+     "inherited",
+     "download_url"
+    ],
+    "title": "AssetOut"
+   },
+   "Body_detector_test_api_v1_system_diagnostics_detector_test_post": {
+    "properties": {
+     "file": {
+      "anyOf": [
+       {
+        "type": "string",
+        "contentMediaType": "application/octet-stream"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "File"
+     }
+    },
+    "type": "object",
+    "title": "Body_detector_test_api_v1_system_diagnostics_detector_test_post"
+   },
+   "Body_ocr_test_api_v1_system_diagnostics_ocr_test_post": {
+    "properties": {
+     "file": {
+      "anyOf": [
+       {
+        "type": "string",
+        "contentMediaType": "application/octet-stream"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "File"
+     }
+    },
+    "type": "object",
+    "title": "Body_ocr_test_api_v1_system_diagnostics_ocr_test_post"
+   },
+   "Body_reinspect_api_v1_inspections__inspection_id__reinspect_post": {
+    "properties": {
+     "label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Label"
+     },
+     "reuse_photo": {
+      "type": "boolean",
+      "title": "Reuse Photo",
+      "default": false
+     },
+     "photo": {
+      "anyOf": [
+       {
+        "type": "string",
+        "contentMediaType": "application/octet-stream"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Photo"
+     }
+    },
+    "type": "object",
+    "title": "Body_reinspect_api_v1_inspections__inspection_id__reinspect_post"
+   },
+   "Body_upload_asset_api_v1_versions__version_id__assets_post": {
+    "properties": {
+     "kind": {
+      "type": "string",
+      "title": "Kind"
+     },
+     "file": {
+      "type": "string",
+      "contentMediaType": "application/octet-stream",
+      "title": "File"
+     }
+    },
+    "type": "object",
+    "required": [
+     "kind",
+     "file"
+    ],
+    "title": "Body_upload_asset_api_v1_versions__version_id__assets_post"
+   },
+   "EvidenceOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "inspection_id": {
+      "type": "string",
+      "title": "Inspection Id"
+     },
+     "version_id": {
+      "type": "string",
+      "title": "Version Id"
+     },
+     "finding_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Finding Id"
+     },
+     "kind": {
+      "type": "string",
+      "title": "Kind"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "content_type": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Content Type"
+     },
+     "width": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Width"
+     },
+     "height": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Height"
+     },
+     "sha256": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sha256"
+     },
+     "bbox": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "number"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Bbox"
+     },
+     "source_asset_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source Asset Id"
+     },
+     "operation": {
+      "type": "string",
+      "title": "Operation"
+     },
+     "algorithm": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Algorithm"
+     },
+     "error": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Error"
+     },
+     "created_at": {
+      "type": "string",
+      "title": "Created At"
+     },
+     "url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Url"
+     },
+     "thumbnail_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Thumbnail Url"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "inspection_id",
+     "version_id",
+     "finding_id",
+     "kind",
+     "title",
+     "content_type",
+     "width",
+     "height",
+     "sha256",
+     "bbox",
+     "source_asset_id",
+     "operation",
+     "algorithm",
+     "error",
+     "created_at",
+     "url",
+     "thumbnail_url"
+    ],
+    "title": "EvidenceOut"
+   },
+   "FindingDetail": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "inspection_id": {
+      "type": "string",
+      "title": "Inspection Id"
+     },
+     "version_id": {
+      "type": "string",
+      "title": "Version Id"
+     },
+     "version_no": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Version No"
+     },
+     "seq": {
+      "type": "integer",
+      "title": "Seq"
+     },
+     "finding_key": {
+      "type": "string",
+      "title": "Finding Key"
+     },
+     "check_type": {
+      "type": "string",
+      "title": "Check Type"
+     },
+     "zone_code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Zone Code"
+     },
+     "subject": {
+      "type": "string",
+      "title": "Subject"
+     },
+     "expected_value": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expected Value"
+     },
+     "observed_value": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Observed Value"
+     },
+     "observed_raw": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Observed Raw"
+     },
+     "verdict": {
+      "type": "string",
+      "enum": [
+       "PASS",
+       "FAIL",
+       "UNCERTAIN"
+      ],
+      "title": "Verdict"
+     },
+     "effective_verdict": {
+      "type": "string",
+      "title": "Effective Verdict"
+     },
+     "review_status": {
+      "type": "string",
+      "title": "Review Status"
+     },
+     "rule": {
+      "type": "string",
+      "title": "Rule"
+     },
+     "explanation": {
+      "type": "string",
+      "title": "Explanation"
+     },
+     "confidences": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Confidences"
+     },
+     "review_reasons": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Review Reasons"
+     },
+     "bbox": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "number"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Bbox"
+     },
+     "expected_bbox": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "number"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expected Bbox"
+     },
+     "drawing_bbox": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "number"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Drawing Bbox"
+     },
+     "detection_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Detection Id"
+     },
+     "ocr_observation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ocr Observation Id"
+     },
+     "model_refs": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Model Refs"
+     },
+     "created_at": {
+      "type": "string",
+      "title": "Created At"
+     },
+     "review_count": {
+      "type": "integer",
+      "title": "Review Count"
+     },
+     "details": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Details"
+     },
+     "reviews": {
+      "items": {
+       "$ref": "#/components/schemas/ReviewOut"
+      },
+      "type": "array",
+      "title": "Reviews"
+     },
+     "evidence": {
+      "items": {
+       "$ref": "#/components/schemas/EvidenceOut"
+      },
+      "type": "array",
+      "title": "Evidence"
+     },
+     "detection": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Detection"
+     },
+     "ocr_observation": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ocr Observation"
+     },
+     "history": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "History"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "inspection_id",
+     "version_id",
+     "seq",
+     "finding_key",
+     "check_type",
+     "zone_code",
+     "subject",
+     "expected_value",
+     "observed_value",
+     "observed_raw",
+     "verdict",
+     "effective_verdict",
+     "review_status",
+     "rule",
+     "explanation",
+     "confidences",
+     "review_reasons",
+     "bbox",
+     "expected_bbox",
+     "drawing_bbox",
+     "detection_id",
+     "ocr_observation_id",
+     "model_refs",
+     "created_at",
+     "review_count",
+     "details",
+     "reviews",
+     "evidence",
+     "detection",
+     "ocr_observation",
+     "history"
+    ],
+    "title": "FindingDetail"
+   },
+   "FindingList": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/FindingOut"
+      },
+      "type": "array",
+      "title": "Items"
+     },
+     "total": {
+      "type": "integer",
+      "title": "Total"
+     },
+     "counts": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Counts"
+     }
+    },
+    "type": "object",
+    "required": [
+     "items",
+     "total",
+     "counts"
+    ],
+    "title": "FindingList"
+   },
+   "FindingOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "inspection_id": {
+      "type": "string",
+      "title": "Inspection Id"
+     },
+     "version_id": {
+      "type": "string",
+      "title": "Version Id"
+     },
+     "version_no": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Version No"
+     },
+     "seq": {
+      "type": "integer",
+      "title": "Seq"
+     },
+     "finding_key": {
+      "type": "string",
+      "title": "Finding Key"
+     },
+     "check_type": {
+      "type": "string",
+      "title": "Check Type"
+     },
+     "zone_code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Zone Code"
+     },
+     "subject": {
+      "type": "string",
+      "title": "Subject"
+     },
+     "expected_value": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expected Value"
+     },
+     "observed_value": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Observed Value"
+     },
+     "observed_raw": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Observed Raw"
+     },
+     "verdict": {
+      "type": "string",
+      "enum": [
+       "PASS",
+       "FAIL",
+       "UNCERTAIN"
+      ],
+      "title": "Verdict"
+     },
+     "effective_verdict": {
+      "type": "string",
+      "title": "Effective Verdict"
+     },
+     "review_status": {
+      "type": "string",
+      "title": "Review Status"
+     },
+     "rule": {
+      "type": "string",
+      "title": "Rule"
+     },
+     "explanation": {
+      "type": "string",
+      "title": "Explanation"
+     },
+     "confidences": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Confidences"
+     },
+     "review_reasons": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Review Reasons"
+     },
+     "bbox": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "number"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Bbox"
+     },
+     "expected_bbox": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "number"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expected Bbox"
+     },
+     "drawing_bbox": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "number"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Drawing Bbox"
+     },
+     "detection_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Detection Id"
+     },
+     "ocr_observation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ocr Observation Id"
+     },
+     "model_refs": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Model Refs"
+     },
+     "created_at": {
+      "type": "string",
+      "title": "Created At"
+     },
+     "review_count": {
+      "type": "integer",
+      "title": "Review Count"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "inspection_id",
+     "version_id",
+     "seq",
+     "finding_key",
+     "check_type",
+     "zone_code",
+     "subject",
+     "expected_value",
+     "observed_value",
+     "observed_raw",
+     "verdict",
+     "effective_verdict",
+     "review_status",
+     "rule",
+     "explanation",
+     "confidences",
+     "review_reasons",
+     "bbox",
+     "expected_bbox",
+     "drawing_bbox",
+     "detection_id",
+     "ocr_observation_id",
+     "model_refs",
+     "created_at",
+     "review_count"
+    ],
+    "title": "FindingOut"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "InspectionCreate": {
+    "properties": {
+     "title": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Title"
+     },
+     "cabinet_id": {
+      "type": "string",
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Cabinet Id"
+     },
+     "site": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 200
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Site"
+     },
+     "reference": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 120
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reference"
+     },
+     "inspector": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 120
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Inspector"
+     },
+     "project_ref": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 120
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Project Ref"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 5000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "type": "object",
+    "required": [
+     "title",
+     "cabinet_id"
+    ],
+    "title": "InspectionCreate"
+   },
+   "InspectionDetail": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "code": {
+      "type": "string",
+      "title": "Code"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "cabinet_id": {
+      "type": "string",
+      "title": "Cabinet Id"
+     },
+     "site": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Site"
+     },
+     "reference": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reference"
+     },
+     "inspector": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Inspector"
+     },
+     "project_ref": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Project Ref"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     },
+     "is_demo": {
+      "type": "boolean",
+      "title": "Is Demo"
+     },
+     "created_at": {
+      "type": "string",
+      "title": "Created At"
+     },
+     "updated_at": {
+      "type": "string",
+      "title": "Updated At"
+     },
+     "version_count": {
+      "type": "integer",
+      "title": "Version Count"
+     },
+     "latest_version": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/VersionOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "versions": {
+      "items": {
+       "$ref": "#/components/schemas/VersionOut"
+      },
+      "type": "array",
+      "title": "Versions"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "code",
+     "title",
+     "cabinet_id",
+     "site",
+     "reference",
+     "inspector",
+     "project_ref",
+     "notes",
+     "is_demo",
+     "created_at",
+     "updated_at",
+     "version_count",
+     "latest_version",
+     "versions"
+    ],
+    "title": "InspectionDetail"
+   },
+   "InspectionList": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/InspectionOut"
+      },
+      "type": "array",
+      "title": "Items"
+     },
+     "total": {
+      "type": "integer",
+      "title": "Total"
+     },
+     "page": {
+      "type": "integer",
+      "title": "Page"
+     },
+     "page_size": {
+      "type": "integer",
+      "title": "Page Size"
+     }
+    },
+    "type": "object",
+    "required": [
+     "items",
+     "total",
+     "page",
+     "page_size"
+    ],
+    "title": "InspectionList"
+   },
+   "InspectionOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "code": {
+      "type": "string",
+      "title": "Code"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "cabinet_id": {
+      "type": "string",
+      "title": "Cabinet Id"
+     },
+     "site": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Site"
+     },
+     "reference": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reference"
+     },
+     "inspector": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Inspector"
+     },
+     "project_ref": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Project Ref"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     },
+     "is_demo": {
+      "type": "boolean",
+      "title": "Is Demo"
+     },
+     "created_at": {
+      "type": "string",
+      "title": "Created At"
+     },
+     "updated_at": {
+      "type": "string",
+      "title": "Updated At"
+     },
+     "version_count": {
+      "type": "integer",
+      "title": "Version Count"
+     },
+     "latest_version": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/VersionOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "code",
+     "title",
+     "cabinet_id",
+     "site",
+     "reference",
+     "inspector",
+     "project_ref",
+     "notes",
+     "is_demo",
+     "created_at",
+     "updated_at",
+     "version_count",
+     "latest_version"
+    ],
+    "title": "InspectionOut"
+   },
+   "InspectionUpdate": {
+    "properties": {
+     "title": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 200,
+        "minLength": 1
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Title"
+     },
+     "site": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 200
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Site"
+     },
+     "reference": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 120
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reference"
+     },
+     "inspector": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 120
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Inspector"
+     },
+     "project_ref": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 120
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Project Ref"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 5000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "type": "object",
+    "title": "InspectionUpdate"
+   },
+   "JobOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "inspection_id": {
+      "type": "string",
+      "title": "Inspection Id"
+     },
+     "version_id": {
+      "type": "string",
+      "title": "Version Id"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "cancel_requested": {
+      "type": "boolean",
+      "title": "Cancel Requested"
+     },
+     "current_stage": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Current Stage"
+     },
+     "error": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Error"
+     },
+     "created_at": {
+      "type": "string",
+      "title": "Created At"
+     },
+     "started_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Started At"
+     },
+     "finished_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Finished At"
+     },
+     "stages": {
+      "items": {
+       "$ref": "#/components/schemas/StageOut"
+      },
+      "type": "array",
+      "title": "Stages"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "inspection_id",
+     "version_id",
+     "status",
+     "cancel_requested",
+     "current_stage",
+     "error",
+     "created_at",
+     "started_at",
+     "finished_at",
+     "stages"
+    ],
+    "title": "JobOut"
+   },
+   "ManualAlignmentIn": {
+    "properties": {
+     "anchors": {
+      "items": {
+       "$ref": "#/components/schemas/AnchorPair"
+      },
+      "type": "array",
+      "maxItems": 40,
+      "minItems": 4,
+      "title": "Anchors"
+     },
+     "rerun": {
+      "type": "boolean",
+      "title": "Rerun",
+      "default": true
+     }
+    },
+    "type": "object",
+    "required": [
+     "anchors"
+    ],
+    "title": "ManualAlignmentIn"
+   },
+   "Readiness": {
+    "properties": {
+     "ready": {
+      "type": "boolean",
+      "title": "Ready"
+     },
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/ReadinessItem"
+      },
+      "type": "array",
+      "title": "Items"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ready",
+     "items"
+    ],
+    "title": "Readiness"
+   },
+   "ReadinessItem": {
+    "properties": {
+     "key": {
+      "type": "string",
+      "title": "Key"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "ok",
+       "warning",
+       "error"
+      ],
+      "title": "Status"
+     },
+     "message": {
+      "type": "string",
+      "title": "Message"
+     }
+    },
+    "type": "object",
+    "required": [
+     "key",
+     "label",
+     "status",
+     "message"
+    ],
+    "title": "ReadinessItem"
+   },
+   "ReviewIn": {
+    "properties": {
+     "action": {
+      "type": "string",
+      "enum": [
+       "confirm",
+       "resolve_pass",
+       "resolve_fail",
+       "false_positive",
+       "correct_observed",
+       "mark_reviewed",
+       "waive",
+       "note"
+      ],
+      "title": "Action"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 5000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 2000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     },
+     "corrected_value": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 255
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Corrected Value"
+     }
+    },
+    "type": "object",
+    "required": [
+     "action"
+    ],
+    "title": "ReviewIn"
+   },
+   "ReviewOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "finding_id": {
+      "type": "string",
+      "title": "Finding Id"
+     },
+     "action": {
+      "type": "string",
+      "title": "Action"
+     },
+     "resulting_verdict": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Resulting Verdict"
+     },
+     "corrected_value": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Corrected Value"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     },
+     "reviewer": {
+      "type": "string",
+      "title": "Reviewer"
+     },
+     "reviewer_kind": {
+      "type": "string",
+      "title": "Reviewer Kind"
+     },
+     "details": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Details"
+     },
+     "created_at": {
+      "type": "string",
+      "title": "Created At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "finding_id",
+     "action",
+     "resulting_verdict",
+     "corrected_value",
+     "reason",
+     "notes",
+     "reviewer",
+     "reviewer_kind",
+     "details",
+     "created_at"
+    ],
+    "title": "ReviewOut"
+   },
+   "SampleInspectionIn": {
+    "properties": {
+     "variant": {
+      "type": "string",
+      "enum": [
+       "v1",
+       "v2"
+      ],
+      "title": "Variant",
+      "default": "v1"
+     },
+     "run": {
+      "type": "boolean",
+      "title": "Run",
+      "default": true
+     }
+    },
+    "type": "object",
+    "title": "SampleInspectionIn"
+   },
+   "StageOut": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "order": {
+      "type": "integer",
+      "title": "Order"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "message": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Message"
+     },
+     "details": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Details"
+     },
+     "started_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Started At"
+     },
+     "finished_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Finished At"
+     },
+     "duration_ms": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Duration Ms"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "title",
+     "order",
+     "status",
+     "message",
+     "details",
+     "started_at",
+     "finished_at",
+     "duration_ms"
+    ],
+    "title": "StageOut"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   },
+   "VersionConfigUpdate": {
+    "properties": {
+     "checks": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Checks"
+     },
+     "drawing_page": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 500.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Drawing Page"
+     },
+     "sheets": {
+      "anyOf": [
+       {
+        "items": {
+         "additionalProperties": true,
+         "type": "object"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sheets"
+     },
+     "preprocess": {
+      "anyOf": [
+       {
+        "additionalProperties": {
+         "type": "boolean"
+        },
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Preprocess"
+     },
+     "detector": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Detector"
+     },
+     "policies": {
+      "anyOf": [
+       {
+        "additionalProperties": {
+         "additionalProperties": true,
+         "type": "object"
+        },
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Policies"
+     }
+    },
+    "type": "object",
+    "title": "VersionConfigUpdate"
+   },
+   "VersionOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "inspection_id": {
+      "type": "string",
+      "title": "Inspection Id"
+     },
+     "version_no": {
+      "type": "integer",
+      "title": "Version No"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "parent_version_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Parent Version Id"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "config": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Config"
+     },
+     "summary": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Summary"
+     },
+     "effective_summary": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Effective Summary"
+     },
+     "registration": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Registration"
+     },
+     "preprocessing": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Preprocessing"
+     },
+     "error": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Error"
+     },
+     "created_at": {
+      "type": "string",
+      "title": "Created At"
+     },
+     "started_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Started At"
+     },
+     "completed_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Completed At"
+     },
+     "duration_ms": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Duration Ms"
+     },
+     "assets": {
+      "items": {
+       "$ref": "#/components/schemas/AssetOut"
+      },
+      "type": "array",
+      "title": "Assets"
+     },
+     "latest_job_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latest Job Id"
+     },
+     "reviewed_count": {
+      "type": "integer",
+      "title": "Reviewed Count"
+     },
+     "finding_count": {
+      "type": "integer",
+      "title": "Finding Count"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "inspection_id",
+     "version_no",
+     "label",
+     "parent_version_id",
+     "status",
+     "config",
+     "summary",
+     "effective_summary",
+     "registration",
+     "preprocessing",
+     "error",
+     "created_at",
+     "started_at",
+     "completed_at",
+     "duration_ms",
+     "assets",
+     "latest_job_id",
+     "reviewed_count",
+     "finding_count"
+    ],
+    "title": "VersionOut"
+   },
+   "ZoneIn": {
+    "properties": {
+     "code": {
+      "type": "string",
+      "maxLength": 40,
+      "minLength": 1,
+      "title": "Code"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 200
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "bbox": {
+      "items": {
+       "type": "number"
+      },
+      "type": "array",
+      "maxItems": 4,
+      "minItems": 4,
+      "title": "Bbox"
+     }
+    },
+    "type": "object",
+    "required": [
+     "code",
+     "bbox"
+    ],
+    "title": "ZoneIn"
+   },
+   "ZonesUpdate": {
+    "properties": {
+     "zones": {
+      "items": {
+       "$ref": "#/components/schemas/ZoneIn"
+      },
+      "type": "array",
+      "title": "Zones"
+     }
+    },
+    "type": "object",
+    "required": [
+     "zones"
+    ],
+    "title": "ZonesUpdate"
+   }
+  }
+ }
+}

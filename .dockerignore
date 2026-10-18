@@ -1,0 +1,7 @@
+**/.dart_tool
+frontend/build
+backend/var
+**/__pycache__
+artifacts
+models/cache
+.git

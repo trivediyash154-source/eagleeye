@@ -1,0 +1,16 @@
+# Troubleshooting
+
+| Symptom | Cause / fix |
+|---|---|
+| Console shows “Backend not reachable” | API not running or wrong base URL. Start `uvicorn app.main:app --port 8000` in `backend/`; check **Settings → API base URL** (dev server on another port defaults to `http://<host>:8000`). |
+| YOLO status `unavailable` | No weights at `EAGLEEYE_DETECTOR_WEIGHTS` / fallback. Run `./scripts/setup_models.sh`; check `models/eagleeye-synth-v1.pt` exists (git LFS not used; plain file). |
+| YOLO status `degraded (generic_coco)` | Custom weights missing → COCO fallback, which has no cabinet classes. Presence/type checks become UNCERTAIN by design. |
+| OCR `unavailable` | EasyOCR weights missing in `models/cache/easyocr` (run setup script) or `EAGLEEYE_OCR_ALLOW_DOWNLOAD=false` with no files. PaddleOCR errors are listed per engine in Model Diagnostics. |
+| Slow processing | CPU inference: full-image OCR dominates (25–140 s on a 4000×3000 photo). Use a GPU (`EAGLEEYE_DETECTOR_DEVICE=cuda:0`, `EAGLEEYE_OCR_GPU=true`) or lower `EAGLEEYE_OCR_FULL_IMAGE_CANVAS`. |
+| Registration `insufficient/failed` | Too few identifiers shared by drawing text and photo OCR, or photo too oblique. Use **Drawing Intelligence → Manual alignment** (≥4 point pairs) which re-runs as a new version. |
+| Many ferrules UNCERTAIN | Labels too small in the photo (< ~20 px text height). Photograph closer / higher resolution; confusable pairs (8/B, 0/O) are UNCERTAIN on purpose. |
+| Spreadsheet “no records parsed” | Map columns in New Inspection step 4 (Component ID or Ferrule/Terminal must be mapped); header row is auto-detected but editable. |
+| Landing shows a static drawing instead of 3D | WebGL unavailable (headless/remote desktop/blocked GPU). The fallback is intentional. |
+| `ModuleNotFoundError: pi_heif` in logs | Ultralytics tries HEIF for unknown files; harmless — non-JPEG/PNG uploads are rejected with 400. |
+| PostgreSQL `value too long` | Report it: column lengths are enforced on PostgreSQL but not SQLite. Tests run on both. |
+| Deep link 404 when serving the build elsewhere | Configure SPA fallback to `index.html` (the FastAPI server does this automatically). |

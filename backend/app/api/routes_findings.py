@@ -99,7 +99,7 @@ def add_review(finding_id: str, body: ReviewIn, db: Session = Depends(get_db)):
         details["comparison_with_corrected_value"] = cmp_.to_json()
         details["rule"] = "human_reading: exact match → PASS, any difference → FAIL (the inspector's reading replaces OCR for this decision)"
     db.add(ReviewDecision(finding_id=f.id, action=action, resulting_verdict=resulting, corrected_value=(body.corrected_value or None), reason=body.reason, notes=body.notes,
-                          reviewer=reviewer(), reviewer_kind="local-demo-identity (no authentication in this prototype)", details=details))
+                          reviewer=reviewer(), reviewer_kind="local-demo-identity", details=details))
     audit(db, "review_recorded", "finding", f.id, f.inspection_id, {"action": action, "resulting_verdict": resulting, "seq": f.seq, "version_no": v.version_no}, actor=reviewer())
     db.commit()
     db.refresh(f)

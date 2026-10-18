@@ -1,0 +1,33 @@
+# Production-style stack: PostgreSQL + EAGLE EYE (API + web console on http://localhost:8000).
+# Copy .env.example to .env first and change POSTGRES_PASSWORD.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: eagleeye
+      POSTGRES_USER: eagleeye
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eagleeye -d eagleeye"]
+      interval: 5s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      EAGLEEYE_DATABASE_URL: postgresql+psycopg://eagleeye:${POSTGRES_PASSWORD:-change-me}@db:5432/eagleeye
+      EAGLEEYE_ENVIRONMENT: production
+      EAGLEEYE_CORS_ORIGINS: '["http://localhost:8000"]'
+    ports:
+      - "8000:8000"
+    volumes:
+      - evidence:/data
+
+volumes:
+  pgdata:
+  evidence:

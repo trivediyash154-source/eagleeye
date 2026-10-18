@@ -45,6 +45,8 @@ class ObsText:
     box: tuple[float, float, float, float]
     region: str = "full"
     variant: str = "full"
+    agree: int = 1  # readings of this region that produced the same normalised text (incl. itself)
+    readings: int = 1  # all readings of this region (preprocessing variants + overlapping passes)
 
     @property
     def center(self) -> tuple[float, float]:
@@ -352,7 +354,8 @@ class Verifier:
                 obs = ctx.ocr_at(_expand(exp_box, 0.25, 0.4), f"device_label:{c.tag}")
                 unique, note, targeted = obs is not None, "targeted OCR of the projected label region", True
             assoc_note = f"Association: {note}." if note else ""
-            dec = decide_identifier("device_label", expected, obs.raw if obs else None, obs.conf if obs else None, unique, assoc_note, ctx.policies.get("device_label"))
+            dec = decide_identifier("device_label", expected, obs.raw if obs else None, obs.conf if obs else None, unique, assoc_note, ctx.policies.get("device_label"),
+                                    support=(obs.agree, obs.readings) if obs else None)
             self._emit_ident(key, "device_label", c.tag, expected, obs, dec, exp_box, {**details, "targeted_ocr": targeted, "search_region": region}, base)
             return
         # no registration: label must be tied to a detected component of the right class
@@ -379,7 +382,8 @@ class Verifier:
             conf["edit_distance"] = dec.comparison.distance
             conf["text_similarity"] = round(dec.comparison.similarity, 4)
         norm = normalize(obs.raw) if obs else (None, [])
-        d = {**details, "comparison": dec.comparison.to_json() if dec.comparison else None, "normalization_steps": norm[1], "ocr_region": obs.region if obs else None, "ocr_variant": obs.variant if obs else None}
+        d = {**details, "comparison": dec.comparison.to_json() if dec.comparison else None, "normalization_steps": norm[1], "ocr_region": obs.region if obs else None,
+             "ocr_variant": obs.variant if obs else None, "reading_support": {"agree": obs.agree, "readings": obs.readings} if obs else None}
         self._add(finding_key=key, check_type=check_type, expected_value=expected, observed_value=norm[0], observed_raw=obs.raw if obs else None, verdict=dec.verdict,
                   rule=dec.rule, explanation=dec.explanation, confidences=conf, review_reasons=dec.reasons, bbox=list(obs.box) if obs else exp_box,
                   ocr_observation_id=obs.id if obs else None, details=d, **base)
@@ -414,7 +418,8 @@ class Verifier:
                 if obs is None and ctx.ocr_at is not None:
                     obs = ctx.ocr_at(_expand(exp_box, 0.25, 0.5), f"ferrule:{subject}")
                     unique, note, targeted = obs is not None, "targeted OCR of the projected ferrule region", True
-                dec = decide_identifier("ferrule", i.value, obs.raw if obs else None, obs.conf if obs else None, unique, f"Association: {note}." if note else "", ctx.policies.get("ferrule"))
+                dec = decide_identifier("ferrule", i.value, obs.raw if obs else None, obs.conf if obs else None, unique, f"Association: {note}." if note else "", ctx.policies.get("ferrule"),
+                                        support=(obs.agree, obs.readings) if obs else None)
                 self._emit_ident(key, "ferrule_label", subject, i.value, obs, dec, exp_box, {**details, "targeted_ocr": targeted, "search_region": region}, {**base, "expected_bbox": exp_box})
         if "wire_color" in ctx.checks and i.wire_color:
             self._wire_color(i, base, details)

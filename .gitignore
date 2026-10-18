@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+
+# Runtime data (uploads, evidence, reports, sqlite db)
+backend/var/
+var/
+*.db
+*.sqlite3
+
+# Model caches (keep curated weights under models/ explicitly)
+models/cache/
+runs/
+artifacts/training/
+artifacts/synthetic_dataset/
+yolov8n.pt
+*.onnx
+
+# Flutter / Dart
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/build/
+frontend/.packages
+frontend/.idea/
+frontend/*.iml
+frontend/node_modules/
+
+# Env / secrets
+.env
+*.env.local
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

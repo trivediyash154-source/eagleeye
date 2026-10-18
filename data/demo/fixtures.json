@@ -1,0 +1,54 @@
+{
+  "fixture_set": "CAB-07",
+  "synthetic": true,
+  "notice": "All files are procedurally generated for demonstration and testing. They are not photographs or documents of a real cabinet.",
+  "files": {
+    "photo_v1": "CAB-07_cabinet_photo_v1_SYNTHETIC.jpg",
+    "photo_v2": "CAB-07_cabinet_photo_v2_SYNTHETIC.jpg",
+    "drawing": "CAB-07_GA_drawing_SYNTHETIC.pdf",
+    "expected_list": "CAB-07_expected_list_SYNTHETIC.xlsx",
+    "wire_list_csv": "CAB-07_wire_list_SYNTHETIC.csv"
+  },
+  "ground_truth_discrepancies_v1": [
+    {
+      "item": "CB44",
+      "check": "component_presence",
+      "truth": "breaker not fitted (label plate present)"
+    },
+    {
+      "item": "PS12",
+      "check": "device_label",
+      "truth": "label plate printed 'PS21'"
+    },
+    {
+      "item": "K2",
+      "check": "device_label",
+      "truth": "label plate partly covered by a cable tie"
+    },
+    {
+      "item": "X12:4",
+      "check": "ferrule_label",
+      "truth": "ferrule 'X12-8B' fitted instead of 'X12-4B'"
+    },
+    {
+      "item": "X12:6",
+      "check": "ferrule_label",
+      "truth": "ferrule printed 'X12-68' instead of 'X12-6B' (8/B confusable) \u2014 present in v1 and v2"
+    },
+    {
+      "item": "X12:7",
+      "check": "wire_color",
+      "truth": "brown wire instead of blue (experimental check)"
+    }
+  ],
+  "fixed_in_v2": [
+    "CB44",
+    "PS12",
+    "X12:4",
+    "X12:7"
+  ],
+  "still_present_in_v2": [
+    "K2 (label still covered)",
+    "X12:6"
+  ]
+}

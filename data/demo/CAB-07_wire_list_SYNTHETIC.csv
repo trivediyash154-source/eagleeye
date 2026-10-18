@@ -1,0 +1,11 @@
+Terminal,Ferrule No.,Wire Colour,From Device,Zone,Notes
+X12:1,X12-1A,Brown,QF01,Z4,
+X12:2,X12-2A,Blue,QF01,Z4,
+X12:3,X12-3A,Black,QF01,Z4,
+X12:4,X12-4B,Brown,CB41,Z4,
+X12:5,X12-5B,Blue,CB42,Z4,
+X12:6,X12-6B,Grey,CB43,Z4,
+X12:7,X12-7C,Blue,K1,Z4,
+X12:8,X12-8C,Black,K2,Z4,
+X12:9,X12-9A,Brown,K3,Z4,
+X12:10,X12-10A,Blue,PS11,Z4,

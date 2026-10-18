@@ -52,8 +52,12 @@ def decode_image(data: bytes) -> DecodedImage:
         arr = cv2.cvtColor(np.asarray(im), cv2.COLOR_RGB2BGR)
     except Image.DecompressionBombError as exc:
         raise ImageDecodeError(f"image exceeds the configured pixel limit: {exc}") from exc
+    except ImageDecodeError:
+        raise
     except (UnidentifiedImageError, OSError, SyntaxError) as exc:
         raise ImageDecodeError(f"file is not a readable image: {exc}") from exc
+    except Exception as exc:  # e.g. third-party PIL patches (Ultralytics HEIF fallback) raising ImportError
+        raise ImageDecodeError(f"file is not a readable JPEG/PNG image ({type(exc).__name__})") from exc
     return DecodedImage(bgr=arr, format=fmt, exif_orientation=orientation, original_size=raw_size)
 
 
@@ -140,7 +144,7 @@ def estimate_skew_degrees(gray: np.ndarray) -> float | None:
     if lines is None:
         return None
     angles = []
-    for x1, y1, x2, y2 in lines[:, 0, :]:
+    for x1, y1, x2, y2 in np.asarray(lines).reshape(-1, 4):
         a = math.degrees(math.atan2(y2 - y1, x2 - x1))
         if abs(a) < 12:
             angles.append(a)

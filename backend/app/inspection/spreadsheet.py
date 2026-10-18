@@ -52,6 +52,12 @@ def _cell(v) -> str | None:
     return s or None
 
 
+def _clean(df: pd.DataFrame) -> pd.DataFrame:
+    """Drop fully empty rows while keeping the ORIGINAL row index (row number = index + 1)."""
+    keep = [i for i in df.index if any(_cell(v) for v in df.loc[i].tolist())]
+    return df.loc[keep]
+
+
 def read_workbook(data: bytes, filename: str) -> dict[str, pd.DataFrame]:
     name = filename.lower()
     try:
@@ -102,16 +108,17 @@ def suggest_field(header: str) -> tuple[str | None, int]:
 
 
 def detect_header_row(df: pd.DataFrame, max_scan: int = 15) -> int:
-    best_row, best_score = 0, -1
-    for i in range(min(max_scan, len(df))):
-        row = [_cell(v) for v in df.iloc[i].tolist()]
+    """Return the ORIGINAL row index (0-based) of the most header-like row among the first rows."""
+    best_row, best_score = int(df.index[0]) if len(df.index) else 0, -1
+    for label in list(df.index)[:max_scan]:
+        row = [_cell(v) for v in df.loc[label].tolist()]
         nonempty = [c for c in row if c]
         if len(nonempty) < 2:
             continue
         hits = sum(1 for c in nonempty if suggest_field(c)[0])
         score = hits * 10 + len(nonempty) * 0.1
         if score > best_score:
-            best_row, best_score = i, score
+            best_row, best_score = int(label), score
     return best_row
 
 
@@ -143,12 +150,13 @@ def _role(mapping: dict[str, str | None]) -> str:
 
 
 def analyze_sheet(name: str, df: pd.DataFrame, header_row: int | None = None, mapping: dict[str, str | None] | None = None) -> SheetAnalysis:
-    df = df.dropna(how="all")
+    df = _clean(df)
     if df.empty:
         return SheetAnalysis(name, 0, [], {}, {}, [], 0, "unknown")
-    df = df.reset_index(drop=True)
-    hr = detect_header_row(df) if header_row is None else max(0, min(header_row, len(df) - 1))
-    headers_raw = [_cell(v) or f"Column {i + 1}" for i, v in enumerate(df.iloc[hr].tolist())]
+    hr = detect_header_row(df) if header_row is None else int(header_row)
+    if hr not in df.index:
+        hr = int(min(df.index, key=lambda i: abs(int(i) - hr)))
+    headers_raw = [_cell(v) or f"Column {i + 1}" for i, v in enumerate(df.loc[hr].tolist())]
     seen: dict[str, int] = {}
     headers = []
     for h in headers_raw:
@@ -171,7 +179,7 @@ def analyze_sheet(name: str, df: pd.DataFrame, header_row: int | None = None, ma
             auto[h] = None
     if mapping:
         auto = {h: (mapping.get(h) if mapping.get(h) in FIELDS else None) for h in headers}
-    body = df.iloc[hr + 1:]
+    body = df.loc[df.index > hr]
     preview = []
     for idx, row in body.head(25).iterrows():
         preview.append({"row": int(idx) + 1, "values": {h: _cell(v) for h, v in zip(headers, row.tolist())}})
@@ -208,7 +216,8 @@ def parse_records(data: bytes, filename: str, sheet_configs: list[dict] | None =
             continue
         used_sheets.append({"name": name, "role": an.role, "header_row": an.header_row, "mapping": an.mapping})
         col_for = {f: h for h, f in an.mapping.items() if f}
-        body = df.dropna(how="all").reset_index(drop=True).iloc[an.header_row + 1:]
+        cleaned = _clean(df)
+        body = cleaned.loc[cleaned.index > an.header_row]
         for idx, row in body.iterrows():
             vals = {h: _cell(v) for h, v in zip(an.columns, row.tolist())}
             rec = {f: vals.get(h) for f, h in col_for.items()}

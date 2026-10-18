@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'app/router.dart';
 import 'core/theme/app_theme.dart';
 
 void main() {
+  usePathUrlStrategy(); // /console/workspace?i=… instead of /#/console/…; the backend serves index.html for deep links
   runApp(const ProviderScope(child: EagleEyeApp()));
 }
 

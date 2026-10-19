@@ -122,8 +122,7 @@ class DetectorService:
 
             if torch.cuda.is_available():
                 return "cuda:0"
-            if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
-                return "mps"
+            # Apple MPS is opt-in (EAGLEEYE_DETECTOR_DEVICE=mps): the pipeline is validated on CPU and CUDA only.
         except Exception:
             pass
         return "cpu"

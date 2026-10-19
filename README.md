@@ -21,9 +21,10 @@ reviewer, and every re-inspection is stored as a new immutable version.
 
 ## Quick start (one command)
 
-You need **Python 3.11** (3.12 and 3.13 also resolve), `git`, and ~6 GB of free disk for PyTorch.
-**No Flutter SDK is needed**: the built web console is committed in `frontend/prebuilt/web` and
-served by the backend.
+You need `git` and ~6 GB of free disk for PyTorch. Python 3.11–3.13 is used if installed; if not
+(e.g. macOS ships 3.9), `run_local.sh` installs a private Python 3.11 with [uv](https://docs.astral.sh/uv)
+inside the repo folder (`.tools/`), nothing system-wide. **No Flutter SDK is needed**: the built web
+console is committed in `frontend/prebuilt/web` and served by the backend.
 
 **Linux / macOS (Apple Silicon, macOS 14+)**
 
@@ -33,7 +34,7 @@ cd eagleeye
 ./scripts/run_local.sh            # first run: venv + dependencies + model weights (~5–10 min)
 ```
 
-**Windows 10/11 (PowerShell)**
+**Windows 10/11 (PowerShell)** — install Python 3.11 from python.org first (tick “Add python.exe to PATH”)
 
 ```powershell
 git clone https://github.com/trivediyash154-source/eagleeye.git

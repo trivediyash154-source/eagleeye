@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     # Detector
     detector_weights: Path = REPO_ROOT / "models" / "eagleeye-synth-v1.pt"
     detector_fallback_weights: Path = REPO_ROOT / "models" / "cache" / "yolov8n.pt"
-    detector_device: str = "auto"  # auto | cpu | cuda:0 | mps
+    detector_device: str = "auto"  # auto (CUDA if available, else CPU) | cpu | cuda:0 | mps
     detector_conf: float = 0.35
     detector_iou: float = 0.5
     detector_min_store_conf: float = 0.05

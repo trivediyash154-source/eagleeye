@@ -5,7 +5,8 @@
 #   ./scripts/run_local.sh --rebuild     also rebuilds the Flutter web console (needs Flutter 3.47+)
 #   PORT=8080 ./scripts/run_local.sh     different port
 #
-# Requirements: Python 3.11–3.13 (3.11 recommended), curl, unzip, ~6 GB free disk (PyTorch).
+# Requirements: curl, unzip, ~6 GB free disk (PyTorch). Uses Python 3.11–3.13 if installed; otherwise
+# installs a private Python 3.11 with uv (https://docs.astral.sh/uv) into .tools/ — nothing system-wide.
 # Supported: Linux x86_64/arm64, macOS 14+ on Apple Silicon. Windows: scripts\run_local.ps1.
 # Flutter is NOT required: a prebuilt web console is committed in frontend/prebuilt/web.
 set -euo pipefail
@@ -16,6 +17,14 @@ VENV="${EAGLEEYE_VENV:-$ROOT/.venv}"
 say() { printf '\033[1;36m[eagle-eye]\033[0m %s\n' "$*"; }
 die() { printf '\033[1;31m[eagle-eye] %s\033[0m\n' "$*" >&2; exit 1; }
 
+TOOLS="$ROOT/.tools"
+
+find_uv() {
+  for p in "$TOOLS/uv" "$TOOLS/bin/uv"; do [ -x "$p" ] && { echo "$p"; return 0; }; done
+  command -v uv 2>/dev/null
+}
+
+# Prints the path of a Python 3.11–3.13 interpreter; installs a private 3.11 with uv when none is found.
 pick_python() {
   if [ -n "${PYTHON:-}" ]; then echo "$PYTHON"; return; fi
   for c in python3.11 python3.12 python3.13 python3; do
@@ -23,11 +32,32 @@ pick_python() {
       echo "$c"; return
     fi
   done
-  die "Python 3.11–3.13 not found (3.11 recommended). Install it or set PYTHON=/path/to/python."
+  local uv
+  if ! uv="$(find_uv)"; then
+    say "Python 3.11–3.13 not found: installing uv into .tools/ to provide a private Python 3.11" >&2
+    curl -LsSf https://github.com/astral-sh/uv/releases/latest/download/uv-installer.sh | env UV_INSTALL_DIR="$TOOLS" UV_NO_MODIFY_PATH=1 INSTALLER_NO_MODIFY_PATH=1 sh >&2 \
+      || die "Could not install uv. Install Python 3.11 yourself (python.org or 'brew install python@3.11') and re-run."
+    uv="$(find_uv)" || die "uv was installed but not found in $TOOLS"
+  fi
+  say "Installing Python 3.11 with uv (one-time download, ~20 MB)" >&2
+  UV_PYTHON_INSTALL_DIR="$TOOLS/python" "$uv" python install --no-bin 3.11 >&2 || die "uv could not install Python 3.11"
+  UV_PYTHON_INSTALL_DIR="$TOOLS/python" "$uv" python find 3.11
 }
 
 command -v curl >/dev/null || die "curl is required"
 command -v unzip >/dev/null || die "unzip is required"
+
+# PyTorch 2.14 / OpenCV 5 ship macOS wheels for Apple Silicon on macOS 14+ only.
+if [ "$(uname -s)" = Darwin ]; then
+  if [ "$(uname -m)" != arm64 ]; then
+    if [ "$(sysctl -n hw.optional.arm64 2>/dev/null || echo 0)" = 1 ]; then
+      die "This Terminal runs under Rosetta (x86_64). Run natively instead:  arch -arm64 ./scripts/run_local.sh"
+    fi
+    die "Intel Macs cannot install PyTorch 2.14 / OpenCV 5 natively. Use Docker instead:  docker compose up --build"
+  fi
+  MACOS="$(sw_vers -productVersion)"
+  [ "${MACOS%%.*}" -ge 14 ] || die "macOS 14 (Sonoma) or newer is required for the PyTorch build used here; this Mac runs macOS $MACOS."
+fi
 
 # 1. Python environment (reinstalled automatically when requirements.txt changes)
 if [ ! -x "$VENV/bin/python" ]; then

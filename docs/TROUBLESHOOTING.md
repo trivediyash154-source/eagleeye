@@ -4,7 +4,9 @@
 |---|---|
 | Console shows “Backend not reachable” | API not running or wrong base URL. Start it with `./scripts/run_local.sh`; check **Settings → API base URL** (a page served by the backend uses its own origin on any port; a Flutter dev server falls back to `http://<host>:8000`). A URL saved in Settings overrides this — **Reset to default** clears it. |
 | `Port 8000 is already in use` | Another EAGLE EYE (or other server) is running. Stop it, or `PORT=8001 ./scripts/run_local.sh` / `scripts\run_local.ps1 -Port 8001`. |
-| `Python 3.11–3.13 not found` / pip cannot find `torch==…`, `sqlalchemy==2.1.5` or `opencv-python-headless==5.0.0.93` | Unsupported interpreter or platform: needs 64-bit Python 3.11–3.13 on Linux, Windows x64 or macOS 14+ Apple Silicon. Intel Macs and Python 3.10 cannot install natively — use Docker. Point the launcher at an interpreter with `PYTHON=/path/to/python3.11`. |
+| `Python 3.11–3.13 not found` | Linux/macOS: `run_local.sh` installs a private Python 3.11 with uv into `.tools/`; if that download is blocked, install Python 3.11 (python.org or `brew install python@3.11`) or point at one with `PYTHON=/path/to/python3.11`. Windows: install Python 3.11 from python.org with “Add python.exe to PATH”. |
+| pip cannot find `torch==…`, `sqlalchemy==2.1.5` or `opencv-python-headless==5.0.0.93` | Unsupported interpreter or platform: needs 64-bit Python 3.11–3.13 on Linux, Windows x64 or macOS 14+ Apple Silicon. Intel Macs and Python 3.10 cannot install natively — use Docker. |
+| macOS: “This Terminal runs under Rosetta” | Terminal was opened with Rosetta (x86_64). Run `arch -arm64 ./scripts/run_local.sh`, or untick *Open using Rosetta* in Terminal’s Get Info. |
 | Windows: “running scripts is disabled on this system” | Start the launcher with `powershell -ExecutionPolicy Bypass -File scripts\run_local.ps1` (affects only that process). |
 | `No space left on device` during install | PyTorch needs ~5 GB in `.venv`. Free space, or point `EAGLEEYE_VENV` at another disk. |
 | Old console after `git pull` | The browser cached the previous build; hard-reload (Ctrl+Shift+R). `index.html` is served with `Cache-Control: no-cache`. |

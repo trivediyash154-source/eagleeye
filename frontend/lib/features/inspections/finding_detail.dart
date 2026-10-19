@@ -111,7 +111,7 @@ class _Body extends ConsumerWidget {
               icon: const Icon(Icons.open_in_new_rounded, size: 15),
               label: const Text('Workspace'),
             ),
-          if (onClose != null) IconButton(onPressed: onClose, icon: const Icon(Icons.close_rounded)),
+          if (onClose != null) IconButton(tooltip: 'Close', onPressed: onClose, icon: const Icon(Icons.close_rounded)),
         ]),
       ),
       Expanded(

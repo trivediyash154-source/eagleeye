@@ -3,11 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'app/router.dart';
+import 'core/api/api_client.dart';
+import 'core/config/app_config.dart';
 import 'core/theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
   usePathUrlStrategy(); // /console/workspace?i=… instead of /#/console/…; the backend serves index.html for deep links
-  runApp(const ProviderScope(child: EagleEyeApp()));
+  await AppConfig.detectOrigin();
+  runApp(const ProviderScope(retry: _retry, child: EagleEyeApp()));
+}
+
+/// Client errors (404, 409, 422 …) are answers, not glitches: show them at once instead of retrying.
+/// Network failures and server errors are retried a few times with backoff.
+Duration? _retry(int count, Object error) {
+  if (error is ApiException && error.status != null && error.status! < 500) return null;
+  if (count >= 4) return null;
+  return ProviderContainer.defaultRetry(count, error);
 }
 
 class EagleEyeApp extends StatefulWidget {

@@ -142,6 +142,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             suffixIcon: _q.isEmpty
                 ? null
                 : IconButton(
+                    tooltip: 'Clear search',
                     icon: const Icon(Icons.close_rounded, size: 16),
                     onPressed: () => setState(() {
                       _search.clear();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/theme/tokens.dart';
+import '../core/widgets/states.dart';
 import '../features/analytics/analytics_page.dart';
 import '../features/dashboard/overview_page.dart';
 import '../features/detection/detection_page.dart';
@@ -73,6 +74,7 @@ Page<void> _page(GoRouterState state, Widget child) => CustomTransitionPage<void
 
 GoRouter buildRouter() => GoRouter(
       initialLocation: '/console',
+      errorPageBuilder: (c, s) => _page(s, _NotFoundPage(location: s.uri.path)),
       routes: [
         // The app opens straight into the console; the product overview lives at /welcome.
         GoRoute(path: '/', redirect: (_, _) => '/console'),
@@ -103,6 +105,26 @@ GoRouter buildRouter() => GoRouter(
         ),
       ],
     );
+
+class _NotFoundPage extends StatelessWidget {
+  const _NotFoundPage({required this.location});
+  final String location;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: EE.bg0,
+        body: EmptyState(
+          icon: Icons.explore_off_outlined,
+          title: 'Page not found',
+          message: 'Nothing lives at $location.',
+          action: FilledButton.icon(
+            onPressed: () => context.go('/console'),
+            icon: const Icon(Icons.space_dashboard_outlined, size: 16),
+            label: const Text('Open the console'),
+          ),
+        ),
+      );
+}
 
 /// Helpers to build links between screens.
 String workspaceLink(String inspectionId, {int? version, String? finding}) =>

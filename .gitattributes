@@ -1,0 +1,4 @@
+# Shell scripts must keep LF endings even on Windows checkouts (core.autocrlf=true breaks bash).
+*.sh text eol=lf
+# Generated web console bundle (scripts/build_web.sh): no line diffs, excluded from language stats.
+frontend/prebuilt/** linguist-generated=true -diff

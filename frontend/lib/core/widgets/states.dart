@@ -43,7 +43,11 @@ class ErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final api = error is ApiException ? error as ApiException : null;
-    final title = api?.isNetwork == true ? 'Backend not reachable' : 'Something went wrong';
+    final title = api?.isNetwork == true
+        ? 'Backend not reachable'
+        : api?.status == 404
+            ? 'Not found'
+            : 'Something went wrong';
     final msg = error.toString();
     if (compact) {
       return Row(children: [

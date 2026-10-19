@@ -13,14 +13,18 @@ authoring environment (Linux, 4 CPU cores, no GPU, Python 3.11, Flutter 3.47.7, 
 | Full upload → report journey (API) | `tests/test_pipeline_e2e.py`: sample inspection → verdicts match fixture ground truth → review stored separately → PDF/JSON/CSV/XLSX downloaded → reinspection with corrected photo → comparison (≥2 resolved, **0 false new discrepancies**) → v1 unchanged. |
 | Registration | Text-anchor homography on the fixture: 15 inliers, 0.22–0.23 px median reprojection error; validation checks unit-tested (mirror/too-few-anchors rejected); manual anchors unit-tested. |
 | Fixture ground truth (v1) | CB44 missing → FAIL · PS12 “PS21” → FAIL · X12:4 “X12-8B” → FAIL · X12:6 “X12-68” → UNCERTAIN (confusable) · K2 occluded → UNCERTAIN · alignment PASS. |
-| Web console in a browser | Production build served by FastAPI at `http://localhost:8000`; screenshots verified for Landing (live Three.js scene), Overview, Live Inspection, Workspace, OCR, New Inspection wizard (fixture shortcut uploads real files). |
+| Fresh clone | `git clone` from GitHub into an empty directory → `./scripts/run_local.sh` (new venv, pinned requirements, model downloads) → server up; full test suite passes in the clone. No Flutter SDK involved (committed `frontend/prebuilt/web`). |
+| Web console in a browser | Playwright (Chromium) against the fresh clone — `scripts/browser_smoke.py` plus a per-route audit: `/` opens the console; all 15 console routes + `/welcome` + unknown-route page render with **no page errors, console errors or failed HTTP calls**, at 1600×1000 and 390×844; Run sample inspection → live stages → workspace → review (machine verdict kept, effective verdict updated) → PDF download → reinspect with fixture v2 → comparison (4 resolved, 0 new discrepancies) → New Inspection wizard with real file uploads → run (same 44/4/6 result as the sample). |
+| Other ports | Console served on any port talks to the API on the same origin (verified on 8100 and 8200). |
+| Windows launcher | `scripts/run_local.ps1` executed under PowerShell 7.5 on Linux (venv, install, weight downloads + unzip, port check, start). **Not run on Windows itself.** |
+| Cross-platform dependencies | `uv pip compile` resolves `requirements.txt` for Python 3.11–3.13 on Linux x86_64/arm64, Windows x64 and macOS 14+ arm64. Intel macOS and Python 3.10 cannot install (no wheels / SQLAlchemy 2.1 needs 3.11) → Docker. |
 | Flutter | `flutter analyze` clean; 8 widget/unit tests pass. |
 | Maintenance | `python -m app.maintenance verify` (SHA-256 integrity of 115 files: OK), `purge --dry-run`. |
 
 ## Implemented but not fully exercised
 
 * Drawing Intelligence zone editor and manual-alignment tool UI (backend endpoints tested via unit tests; UI compiled and rendered, click-through not automated).
-* Detection / Evidence / Review queue / History / Reports / Diagnostics / Health / Settings screens: compile cleanly and load real data; not every interaction was clicked through in a browser.
+* Detection / Evidence / Review queue / Analytics / Reports / Diagnostics / Health / Settings screens: render real data without errors; their secondary controls (filters, zoom, settings forms) were not all clicked through.
 * Raster (scanned) GA drawings: OCR-at-300-DPI path and contour rectangles implemented; no scanned fixture tested.
 * Wire-colour check (experimental, off by default): implemented; not validated.
 * Docker / docker-compose: written, **never built** (no Docker daemon available).

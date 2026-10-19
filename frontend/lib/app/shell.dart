@@ -179,7 +179,7 @@ class _TopBar extends ConsumerWidget {
       padding: EdgeInsets.symmetric(horizontal: showMenu ? 6 : 24),
       decoration: const BoxDecoration(color: EE.bg1, border: Border(bottom: BorderSide(color: EE.line))),
       child: Row(children: [
-        if (showMenu) IconButton(icon: const Icon(Icons.menu_rounded), onPressed: () => Scaffold.of(context).openDrawer()),
+        if (showMenu) IconButton(tooltip: 'Open navigation', icon: const Icon(Icons.menu_rounded), onPressed: () => Scaffold.of(context).openDrawer()),
         if (!narrow) ...[
           const Icon(Icons.factory_outlined, size: 16, color: EE.textDim),
           const SizedBox(width: 8),
@@ -204,7 +204,7 @@ class _TopBar extends ConsumerWidget {
                   const StatusDot(color: EE.cyan, pulse: true, size: 6),
                   const SizedBox(width: 4),
                   Text(
-                    narrow ? '${jobs.length}' : '${jobs.first.inspectionCode ?? 'job'} · ${titleCase(jobs.first.currentStage ?? jobs.first.status)}${jobs.length > 1 ? ' +${jobs.length - 1}' : ''}',
+                    narrow ? '${jobs.length}' : '${jobs.first.inspectionCode ?? 'job'} · ${stageName(jobs.first.currentStage ?? jobs.first.status)}${jobs.length > 1 ? ' +${jobs.length - 1}' : ''}',
                     style: const TextStyle(fontSize: 12, color: EE.cyan, fontWeight: FontWeight.w600),
                   ),
                 ]),

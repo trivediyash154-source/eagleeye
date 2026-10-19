@@ -1,4 +1,6 @@
-# Versions verified in the build environment (Python 3.11, CPU).
+# Versions verified in the build environment (Python 3.11, CPU; full test suite passes).
+# Resolves on Python 3.11–3.13 for Linux x86_64/arm64, Windows x64 and macOS 14+ on Apple Silicon.
+# Not installable natively on Intel Macs (no PyTorch / OpenCV 5 wheels) or Python 3.10: use Docker there.
 fastapi==0.146.0
 uvicorn[standard]==0.54.0
 sqlalchemy==2.1.5
@@ -7,7 +9,7 @@ pydantic==2.14.1
 pydantic-settings==2.16.0
 python-multipart==0.0.32
 opencv-python-headless==5.0.0.93
-numpy==2.2.6
+numpy==2.4.6
 pillow==13.0.0
 pymupdf==1.28.2
 pandas==3.0.6

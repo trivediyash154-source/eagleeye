@@ -11,13 +11,17 @@ Give this file (and the repo URL + branch) to the next developer or AI assistant
 ## Get it running (≈10 min + downloads)
 
 ```bash
-git clone -b claude/nice-hopper-mf9z8s https://github.com/trivediyash154-source/eagleeye.git && cd eagleeye
-./scripts/run_local.sh            # → http://localhost:8000
-cd backend && pytest -m "not slow" && pytest -m slow     # 33 + 1 tests
-cd ../frontend && flutter analyze && flutter test
+git clone https://github.com/trivediyash154-source/eagleeye.git && cd eagleeye
+./scripts/run_local.sh            # Windows: powershell -ExecutionPolicy Bypass -File scripts\run_local.ps1
+# → http://localhost:8000 opens the console directly (product overview page: /welcome)
+cd backend && pip install -r requirements-dev.txt && pytest          # 33 fast + 1 real-model e2e test
+python ../scripts/browser_smoke.py --base http://localhost:8000      # UI walkthrough (needs: python -m playwright install chromium)
 ```
-Needs Python 3.11, Flutter 3.47+ (Dart 3.13), network access to PyPI, pub.dev and GitHub releases
-(for `scripts/setup_models.sh`). `models/cache/` (YOLOv8n + EasyOCR weights) is git-ignored.
+Needs Python 3.11–3.13 and network access to PyPI and GitHub releases (model weights). **Flutter is
+only needed to change the console**: the release build is committed in `frontend/prebuilt/web`; after
+editing Dart code run `./scripts/build_web.sh` (Flutter 3.47+, Dart 3.13) and commit the refreshed
+bundle. `models/cache/` (YOLOv8n + EasyOCR weights) is git-ignored and downloaded by the launchers.
+The repository must be public, or the other person must be added as a collaborator, for `git clone` to work.
 
 ## Ground rules the project follows (keep them)
 
@@ -34,9 +38,8 @@ Needs Python 3.11, Flutter 3.47+ (Dart 3.13), network access to PyPI, pub.dev an
    `models/eagleeye-real-v1.pt`; add a held-out real validation set and report measured metrics with sample size.
 2. **Create a `main` branch and open a PR** from `claude/nice-hopper-mf9z8s` (the repo had no base branch).
 3. **Verify Docker** (`docker compose up --build`) and fix whatever the first real build reveals.
-4. **Browser E2E automation**: Playwright script that clicks through the wizard (upload via file chooser),
-   live job, workspace review, reinspection and report download (Flutter renders to canvas — enable
-   semantics or use coordinates).
+4. **Browser E2E in CI**: `scripts/browser_smoke.py` already clicks through every route, the sample run,
+   review, PDF export, reinspection/compare and the upload wizard; wire it into a CI job.
 5. **PaddleOCR**: install `paddlepaddle paddleocr` where its model hosts are reachable; compare with EasyOCR on ferrules.
 6. **Performance**: OCR dominates (25–140 s on CPU). Options: skip full-image OCR when the detector
    supplies label/marker boxes, lower `EAGLEEYE_OCR_FULL_IMAGE_CANVAS`, GPU.
@@ -58,7 +61,9 @@ Needs Python 3.11, Flutter 3.47+ (Dart 3.13), network access to PyPI, pub.dev an
 | Synthetic renderer / training | `backend/app/demo/synth_cabinet.py`, `backend/scripts/*` |
 | Flutter API client & models | `frontend/lib/core/api/` |
 | Screens | `frontend/lib/features/<screen>/` (router: `frontend/lib/app/router.dart`) |
-| 3D landing scene | `frontend/web/three/eagle_scene.js` + `features/landing/cabinet_scene_web.dart` |
+| 3D product overview (`/welcome`) | `frontend/web/three/eagle_scene.js` + `features/landing/cabinet_scene_web.dart` |
+| Routing (`/` → `/console`) | `frontend/lib/app/router.dart`; API base URL resolution: `frontend/lib/core/config/app_config.dart` |
+| One-command launchers | `scripts/run_local.sh`, `scripts/run_local.ps1`, `scripts/setup_models.sh`, `scripts/build_web.sh` |
 | Design tokens | `frontend/lib/core/theme/tokens.dart` |
 
 ## Environment notes from the original build

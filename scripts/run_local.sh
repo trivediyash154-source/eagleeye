@@ -5,7 +5,8 @@
 #   ./scripts/run_local.sh --rebuild     also rebuilds the Flutter web console (needs Flutter 3.47+)
 #   PORT=8080 ./scripts/run_local.sh     different port
 #
-# Requirements: Python 3.10–3.13 (3.11 recommended), curl, unzip, ~6 GB free disk (PyTorch).
+# Requirements: Python 3.11–3.13 (3.11 recommended), curl, unzip, ~6 GB free disk (PyTorch).
+# Supported: Linux x86_64/arm64, macOS 14+ on Apple Silicon. Windows: scripts\run_local.ps1.
 # Flutter is NOT required: a prebuilt web console is committed in frontend/prebuilt/web.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -17,12 +18,12 @@ die() { printf '\033[1;31m[eagle-eye] %s\033[0m\n' "$*" >&2; exit 1; }
 
 pick_python() {
   if [ -n "${PYTHON:-}" ]; then echo "$PYTHON"; return; fi
-  for c in python3.11 python3.12 python3.10 python3.13 python3; do
-    if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys; sys.exit(0 if (3,10) <= sys.version_info[:2] <= (3,13) else 1)' 2>/dev/null; then
+  for c in python3.11 python3.12 python3.13 python3; do
+    if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys; sys.exit(0 if (3,11) <= sys.version_info[:2] <= (3,13) else 1)' 2>/dev/null; then
       echo "$c"; return
     fi
   done
-  die "Python 3.10–3.13 not found (3.11 recommended). Install it or set PYTHON=/path/to/python."
+  die "Python 3.11–3.13 not found (3.11 recommended). Install it or set PYTHON=/path/to/python."
 }
 
 command -v curl >/dev/null || die "curl is required"

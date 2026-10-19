@@ -369,7 +369,7 @@ class _JobsPanel extends StatelessWidget {
                       Text(j.inspectionCode ?? j.id, style: const TextStyle(fontFamily: EE.fontMono, color: EE.cyan, fontSize: 12.5)),
                       if (j.versionNo != null) Text('  v${j.versionNo}', style: const TextStyle(fontFamily: EE.fontMono, fontSize: 12)),
                       const SizedBox(width: 10),
-                      Expanded(child: Text(titleCase(j.currentStage ?? 'waiting in queue'), overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12.5))),
+                      Expanded(child: Text(stageName(j.currentStage ?? 'waiting in queue'), overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12.5))),
                       StatePill(j.status),
                       const Icon(Icons.chevron_right_rounded, color: EE.textDim),
                     ]),

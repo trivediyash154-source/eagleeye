@@ -21,46 +21,72 @@ reviewer, and every re-inspection is stored as a new immutable version.
 
 ## Quick start (one command)
 
-Requirements: Python 3.11, Flutter 3.47+ / Dart 3.13+ (pubspec constraint; built with Flutter 3.47.7), `curl`, `unzip`, ~4 GB disk (PyTorch).
+You need **Python 3.11** (3.12 and 3.13 also resolve), `git`, and ~6 GB of free disk for PyTorch.
+**No Flutter SDK is needed**: the built web console is committed in `frontend/prebuilt/web` and
+served by the backend.
+
+**Linux / macOS (Apple Silicon, macOS 14+)**
 
 ```bash
 git clone https://github.com/trivediyash154-source/eagleeye.git
 cd eagleeye
-./scripts/run_local.sh          # venv + deps + model weights + fixtures + web build + server
-# open http://localhost:8000
+./scripts/run_local.sh            # first run: venv + dependencies + model weights (~5–10 min)
 ```
 
-Then click **Launch Inspection Console → Run sample inspection** (Overview). The bundled synthetic
-fixture is processed by the *live* pipeline (≈1–3 min on a laptop CPU).
+**Windows 10/11 (PowerShell)**
+
+```powershell
+git clone https://github.com/trivediyash154-source/eagleeye.git
+cd eagleeye
+powershell -ExecutionPolicy Bypass -File scripts\run_local.ps1
+```
+
+Open **<http://localhost:8000>**. The app opens directly in the inspection console (no sign-in);
+click **Run sample inspection** on the Overview. The bundled synthetic fixture goes through the
+*live* pipeline (≈1–3 min on a laptop CPU), the live view follows each stage, and the workspace
+opens when it finishes. The product overview page with the 3D scene is at `/welcome`.
+
+Later runs start in seconds (dependencies are reinstalled only when `requirements.txt` changes).
+Use another port with `PORT=8080 ./scripts/run_local.sh` or `scripts\run_local.ps1 -Port 8080`.
+
+| Platform | Status |
+|---|---|
+| Linux x86_64, Python 3.11 | Verified: fresh clone → `run_local.sh` → full test suite and browser walkthrough |
+| Windows x64, macOS 14+ arm64, Linux arm64, Python 3.12/3.13 | Pinned dependencies resolve (checked with `uv pip compile`); not run on that hardware |
+| Intel Mac, Python ≤ 3.10 | Not installable natively (no PyTorch 2.14 / OpenCV 5 wheels; SQLAlchemy 2.1 needs 3.11) — use Docker |
 
 ## Manual setup
 
 ```bash
-# 1. backend dependencies
-python3.11 -m venv .venv && . .venv/bin/activate
-pip install -r backend/requirements.txt              # CPU-only torch: add --extra-index-url https://download.pytorch.org/whl/cpu
+# 1. backend dependencies (Python 3.11–3.13)
+python3.11 -m venv .venv && . .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r backend/requirements.txt
 
 # 2. third-party model weights (YOLOv8n COCO + EasyOCR) — not stored in git
-./scripts/setup_models.sh
+./scripts/setup_models.sh                                  # Windows: run_local.ps1 does this
 
-# 3. (optional) regenerate demo fixtures / landing images — committed already
-cd backend && python scripts/generate_demo_fixtures.py && python scripts/build_landing_assets.py && cd ..
-
-# 4. configuration (optional; defaults work for local use)
+# 3. configuration (optional; defaults work for local use)
 cp .env.example .env
 
-# 5. web console build (served by the backend at /)
-cd frontend && flutter pub get && flutter build web --release --no-web-resources-cdn && cd ..
-
-# 6. run (migrations are applied automatically at startup; disable with EAGLEEYE_AUTO_MIGRATE=false)
-cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000
+# 4. run (migrations are applied automatically at startup; disable with EAGLEEYE_AUTO_MIGRATE=false)
+cd backend && uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
 * Console: <http://localhost:8000> · API docs (OpenAPI): <http://localhost:8000/api/v1/docs>
-* Frontend dev mode (hot reload): `cd frontend && flutter run -d chrome --web-port 8080`
-  (the app talks to `http://localhost:8000` automatically; override with `--dart-define=API_BASE_URL=…`
-  or in **Settings**).
+* The backend serves `frontend/build/web` if you built it yourself, otherwise `frontend/prebuilt/web`.
+* Regenerate the demo fixtures / landing images (both committed):
+  `cd backend && python scripts/generate_demo_fixtures.py && python scripts/build_landing_assets.py`
 * Apply migrations manually: `cd backend && alembic upgrade head`.
+
+### Changing the web console (Flutter 3.47+, Dart 3.13+)
+
+```bash
+cd frontend && flutter run -d chrome --web-port 8080    # hot reload; talks to the API on :8000
+./scripts/build_web.sh                                  # release build → refreshes frontend/prebuilt/web
+```
+When the page is served by the backend (any port) the console calls the API on the same origin; a
+Flutter dev server falls back to `http://<host>:8000`. Override with `--dart-define=API_BASE_URL=…`
+or in **Settings**. Commit `frontend/prebuilt/web` after `build_web.sh` so others get the change.
 
 ### PostgreSQL
 
@@ -83,9 +109,10 @@ docker compose up --build   # http://localhost:8000
 
 ```bash
 cd backend
-pytest -m "not slow"     # 32 fast tests (rules, parsing, registration, transforms, storage, API)
+pip install -r requirements-dev.txt
+pytest -m "not slow"     # 33 fast tests (rules, parsing, registration, transforms, storage, API)
 pytest -m slow           # real YOLOv8 + OCR end-to-end: sample → review → reports → reinspect → compare
-cd ../frontend && flutter analyze
+cd ../frontend && flutter analyze && flutter test
 ```
 
 ## What happens in an inspection
@@ -98,8 +125,9 @@ cd ../frontend && flutter analyze
    label plates and component bodies located for every expected tag and ferrule.
 3. **Detection** – YOLOv8 full-image + overlapping tiles, border-box suppression, class-wise NMS;
    boxes mapped back to original pixels. All detections ≥ 0.05 stored; threshold 0.35 for “positive”.
-4. **OCR** – full image + crops of detected labels/markers (3 preprocessing variants, chosen by OCR
-   confidence only); raw text kept, every normalisation step recorded; I/O excluded (IEC 81346).
+4. **OCR** – full image + crops of detected labels/markers (3 preprocessing variants combined by
+   consensus; a reading the variants do not corroborate is UNCERTAIN); raw text kept, every
+   normalisation step recorded; I/O excluded (IEC 81346).
 5. **Registration** – SIFT/ORB + RANSAC, and *text anchors* (identifiers unique in both drawing and
    photo) + RANSAC; accepted only if inliers, ratio, coverage, orientation, convexity, scale,
    perspective and reprojection checks all pass. Manual 4-point alignment as fallback.
@@ -141,7 +169,8 @@ frontend/  Flutter web console (lib/app, lib/core, lib/features/*), web/three/ea
 models/    custom detector weights + metrics (third-party weights downloaded to models/cache/)
 data/demo/ synthetic fixtures
 docs/      architecture, API, demo script, troubleshooting, status, openapi.json
-scripts/   setup_models.sh, run_local.sh
+scripts/   run_local.sh / run_local.ps1 (one-command start), setup_models.sh, build_web.sh
+frontend/prebuilt/web   committed release build of the console (no Flutter needed to run)
 ```
 
 ## Documentation

@@ -164,7 +164,7 @@ class DetectorService:
                 self.load_ms = int((time.time() - t0) * 1000)
                 self.last_error = None
                 mfile = path.with_suffix(".metrics.json")
-                self.metrics = json.loads(mfile.read_text()) if mfile.is_file() else None
+                self.metrics = json.loads(mfile.read_text(encoding="utf-8")) if mfile.is_file() else None
                 log.info("Detector loaded", extra={"ctx": {"weights": path.name, "device": self.device, "classes": len(self.class_names), "kind": self.kind}})
                 return True
             except Exception as exc:

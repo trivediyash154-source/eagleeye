@@ -32,3 +32,6 @@ String pct(num? v, {int digits = 0}) => v == null ? '—' : '${(v * 100).toStrin
 String fmtConf(Object? v) => v is num ? v.toStringAsFixed(2) : (v?.toString() ?? '—');
 
 String titleCase(String s) => s.replaceAll('_', ' ').split(' ').map((w) => w.isEmpty ? w : w[0].toUpperCase() + w.substring(1)).join(' ');
+
+/// Short display name of a pipeline stage key (e.g. `ocr` → `OCR`).
+String stageName(String s) => s == 'ocr' ? 'OCR' : titleCase(s);

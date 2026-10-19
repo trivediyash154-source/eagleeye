@@ -72,7 +72,7 @@ def main() -> None:
     for col, w in zip("ABCDEF", (10, 14, 12, 12, 6, 20)):
         ws.column_dimensions[col].width = w
     wb.save(out / "CAB-07_expected_list_SYNTHETIC.xlsx")
-    with open(out / "CAB-07_wire_list_SYNTHETIC.csv", "w", newline="") as f:
+    with open(out / "CAB-07_wire_list_SYNTHETIC.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["Terminal", "Ferrule No.", "Wire Colour", "From Device", "Zone", "Notes"])
         w.writerows(rows)
@@ -99,7 +99,7 @@ def main() -> None:
         "fixed_in_v2": ["CB44", "PS12", "X12:4", "X12:7"],
         "still_present_in_v2": ["K2 (label still covered)", "X12:6"],
     }
-    (out / "fixtures.json").write_text(json.dumps(manifest, indent=2))
+    (out / "fixtures.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print("fixtures written to", out)
 
 

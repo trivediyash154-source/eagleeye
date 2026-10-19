@@ -65,24 +65,29 @@ class _JobListState extends ConsumerState<_JobList> {
           return Panel(
             eyebrow: 'Processing jobs',
             title: '${jobs.length} most recent',
-            child: Column(children: [
-              for (final j in jobs)
-                InkWell(
-                  onTap: () => context.go('/console/live?job=${j.id}'),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-                    child: Row(children: [
-                      SizedBox(width: 92, child: Text(j.inspectionCode ?? '—', style: const TextStyle(fontFamily: EE.fontMono, color: EE.cyan, fontSize: 12.5))),
-                      SizedBox(width: 60, child: Text('v${j.versionNo ?? '?'}', style: const TextStyle(fontFamily: EE.fontMono, fontSize: 12))),
-                      Expanded(child: Text(j.cabinetId ?? '', style: const TextStyle(fontSize: 13))),
-                      SizedBox(width: 130, child: StatePill(j.status)),
-                      SizedBox(width: 150, child: Text(j.currentStage != null ? titleCase(j.currentStage!) : (j.error != null ? 'error' : ''), overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: EE.textMuted))),
-                      SizedBox(width: 90, child: Text(ago(j.createdAt), style: const TextStyle(fontSize: 12, color: EE.textDim))),
-                      const Icon(Icons.chevron_right_rounded, color: EE.textDim),
-                    ]),
+            child: LayoutBuilder(builder: (context, c) {
+              final compact = c.maxWidth < 640; // phones: drop the stage and age columns
+              return Column(children: [
+                for (final j in jobs)
+                  InkWell(
+                    onTap: () => context.go('/console/live?job=${j.id}'),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                      child: Row(children: [
+                        SizedBox(width: compact ? 80 : 92, child: Text(j.inspectionCode ?? '—', style: const TextStyle(fontFamily: EE.fontMono, color: EE.cyan, fontSize: 12.5))),
+                        SizedBox(width: compact ? 32 : 60, child: Text('v${j.versionNo ?? '?'}', style: const TextStyle(fontFamily: EE.fontMono, fontSize: 12))),
+                        Expanded(child: Text(j.cabinetId ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13))),
+                        SizedBox(width: compact ? 104 : 130, child: StatePill(j.status)),
+                        if (!compact) ...[
+                          SizedBox(width: 150, child: Text(j.currentStage != null ? stageName(j.currentStage!) : (j.error != null ? 'error' : ''), overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: EE.textMuted))),
+                          SizedBox(width: 90, child: Text(ago(j.createdAt), style: const TextStyle(fontSize: 12, color: EE.textDim))),
+                        ],
+                        const Icon(Icons.chevron_right_rounded, color: EE.textDim),
+                      ]),
+                    ),
                   ),
-                ),
-            ]),
+              ]);
+            }),
           );
         },
       ),
@@ -243,7 +248,7 @@ class _JobMonitorState extends ConsumerState<_JobMonitor> {
           child: LinearProgressIndicator(value: progress, minHeight: 4, color: j.status == 'failed' ? EE.fail : (j.status == 'completed' ? EE.pass : EE.cyan)),
         ),
         const SizedBox(height: 6),
-        Text('$done of ${stages.length} stages finished${j.currentStage != null && !j.isTerminal ? ' · running: ${titleCase(j.currentStage!)}' : ''}',
+        Text('$done of ${stages.length} stages finished${j.currentStage != null && !j.isTerminal ? ' · running: ${stageName(j.currentStage!)}' : ''}',
             style: const TextStyle(fontSize: 12, color: EE.textMuted)),
         if (_error != null) ...[const SizedBox(height: 8), ErrorView(_error!, compact: true, onRetry: _poll)],
         if (j.error != null) ...[

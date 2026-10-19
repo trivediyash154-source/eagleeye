@@ -28,7 +28,7 @@ def _manifest() -> dict:
     p = get_settings().demo_dir / "fixtures.json"
     if not p.is_file():
         raise ApiError(404, "fixtures_missing", "Demo fixtures are not installed. Run: python backend/scripts/generate_demo_fixtures.py")
-    return json.loads(p.read_text())
+    return json.loads(p.read_text(encoding="utf-8"))
 
 
 @router.get("/demo/fixtures", summary="Bundled synthetic demonstration fixtures")

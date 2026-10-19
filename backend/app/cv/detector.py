@@ -14,6 +14,7 @@ are returned in the coordinates of the image passed in.
 from __future__ import annotations
 
 import json
+import os
 import threading
 import time
 from dataclasses import dataclass, field
@@ -26,6 +27,8 @@ from ..core.logging import get_logger
 from ..core.util import iso, utcnow
 
 log = get_logger("cv.detector")
+os.environ.setdefault("YOLO_AUTOINSTALL", "false")  # never pip-install at runtime
+os.environ.setdefault("YOLO_OFFLINE", "1")  # no telemetry / online checks
 
 # Canonical cabinet classes the verification engine understands.
 CABINET_CLASSES = {"circuit_breaker", "contactor", "power_supply", "terminal_block", "wire_marker", "device_label", "earth_bar", "relay"}

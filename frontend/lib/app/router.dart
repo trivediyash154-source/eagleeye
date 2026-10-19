@@ -72,9 +72,12 @@ Page<void> _page(GoRouterState state, Widget child) => CustomTransitionPage<void
     );
 
 GoRouter buildRouter() => GoRouter(
-      initialLocation: '/',
+      initialLocation: '/console',
       routes: [
-        GoRoute(path: '/', pageBuilder: (c, s) => _page(s, const LandingPage())),
+        // The app opens straight into the console; the product overview lives at /welcome.
+        GoRoute(path: '/', redirect: (_, _) => '/console'),
+        GoRoute(path: '/welcome', pageBuilder: (c, s) => _page(s, const LandingPage())),
+        GoRoute(path: '/landing', redirect: (_, _) => '/welcome'),
         ShellRoute(
           builder: (context, state, child) => ConsoleShell(location: state.uri.toString(), child: child),
           routes: [

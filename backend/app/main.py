@@ -1,6 +1,7 @@
 """EAGLE EYE API application."""
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -8,9 +9,13 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
-from .core.config import BACKEND_DIR, get_settings
-from .core.errors import install_error_handlers
-from .core.logging import configure_logging, get_logger
+# Ultralytics must not pip-install packages or contact its servers at runtime.
+os.environ.setdefault("YOLO_AUTOINSTALL", "false")
+os.environ.setdefault("YOLO_OFFLINE", "1")
+
+from .core.config import BACKEND_DIR, get_settings  # noqa: E402
+from .core.errors import install_error_handlers  # noqa: E402
+from .core.logging import configure_logging, get_logger  # noqa: E402
 
 configure_logging()
 log = get_logger("app")
@@ -77,9 +82,10 @@ def create_app() -> FastAPI:
     for r in (routes_system.router, routes_inspections.router, routes_findings.router, routes_demo.router):
         app.include_router(r, prefix=prefix)
 
-    dist = s.frontend_dist
-    if dist and Path(dist).is_dir() and (Path(dist) / "index.html").is_file():
-        root = Path(dist).resolve()
+    dist = s.resolved_frontend_dist
+    if dist is not None:
+        root = dist.resolve()
+        log.info("Serving web console", extra={"ctx": {"dir": str(root)}})
 
         @app.get("/{full_path:path}", include_in_schema=False)
         async def spa(full_path: str):

@@ -36,7 +36,9 @@ class Settings(BaseSettings):
             "http://127.0.0.1:5000",
         ]
     )
-    frontend_dist: Path | None = REPO_ROOT / "frontend" / "build" / "web"
+    # Web console served at "/". Empty value disables. Default: a local Flutter build if present,
+    # otherwise the prebuilt bundle committed in frontend/prebuilt/web (no Flutter SDK needed).
+    frontend_dist: Path | None = None
 
     # Upload limits (megabytes)
     max_image_mb: int = 25
@@ -85,6 +87,16 @@ class Settings(BaseSettings):
         if self.database_url:
             return self.database_url
         return f"sqlite:///{(self.data_dir / 'eagleeye.db').as_posix()}"
+
+    @property
+    def resolved_frontend_dist(self) -> Path | None:
+        if self.frontend_dist is not None:
+            p = Path(self.frontend_dist)
+            return p if str(p) not in ("", ".") and (p / "index.html").is_file() else None
+        for p in (REPO_ROOT / "frontend" / "build" / "web", REPO_ROOT / "frontend" / "prebuilt" / "web"):
+            if (p / "index.html").is_file():
+                return p
+        return None
 
     @property
     def storage_dir(self) -> Path:

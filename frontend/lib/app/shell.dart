@@ -69,7 +69,7 @@ class _Sidebar extends ConsumerWidget {
       decoration: const BoxDecoration(color: EE.bg1, border: Border(right: BorderSide(color: EE.line))),
       child: Column(children: [
         InkWell(
-          onTap: () => context.go('/'),
+          onTap: () => context.go('/console'),
           child: Padding(
             padding: EdgeInsets.fromLTRB(compact ? 0 : 20, 20, compact ? 0 : 16, 18),
             child: compact ? const Center(child: BrandMark(size: 26)) : const BrandLockup(),
@@ -254,6 +254,13 @@ class _TopBar extends ConsumerWidget {
           ]),
         ),
         actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.go('/welcome');
+            },
+            child: const Text('Product overview'),
+          ),
           TextButton(onPressed: () => openUrl(api.url('/api/v1/docs')), child: const Text('Open API docs (OpenAPI)')),
           FilledButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
         ],

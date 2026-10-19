@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="EAGLE EYE by OpHackers: drawing-aware AI inspection that turns cabinet photographs and engineering specifications into traceable quality decisions.">
+  <meta name="theme-color" content="#04070D">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="EAGLE EYE">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <title>EAGLE EYE · Intelligent Cabinet Inspection</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    html, body { margin: 0; height: 100%; background: #04070D; }
+    #ee-boot { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+      font: 600 11px/1 "JetBrains Mono", Menlo, monospace; letter-spacing: .28em; color: #5D6B83; transition: opacity .4s ease; }
+    #ee-boot .bar { width: 160px; height: 2px; background: #162238; overflow: hidden; }
+    #ee-boot .bar::after { content: ""; display: block; width: 40%; height: 100%; background: #22D3EE; animation: ee 1.2s ease-in-out infinite; }
+    @keyframes ee { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
+    @media (prefers-reduced-motion: reduce) { #ee-boot .bar::after { animation: none; width: 100%; } }
+  </style>
+  <!-- Three.js scene (vendored three r170, see three/LICENSE-three.txt). Mount requests made before the
+       module loads are queued and drained by the module. -->
+  <script>
+    window.__eeSceneQueue = [];
+    window.EagleEyeScenePending = { mount: function (el, o) { window.__eeSceneQueue.push([el, o]); }, unmount: function () {} };
+  </script>
+  <script type="module" src="three/eagle_scene.js"></script>
+</head>
+<body>
+  <div id="ee-boot"><svg width="34" height="34" viewBox="0 0 34 34"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8BD8FF"/><stop offset=".55" stop-color="#22D3EE"/><stop offset="1" stop-color="#8B7CF6"/></linearGradient></defs><path d="M2 6h30L17 31z" fill="url(#g)"/><path d="M10 10h14l-7 12z" fill="#04070D"/></svg>EAGLE EYE<div class="bar"></div></div>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var b = document.getElementById('ee-boot'); if (b) { b.style.opacity = '0'; setTimeout(function () { b.remove(); }, 450); }
+    });
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

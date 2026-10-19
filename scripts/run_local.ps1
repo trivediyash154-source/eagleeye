@@ -5,7 +5,7 @@
 #
 # Requirements: Python 3.11-3.13 for Windows x64 (python.org installer, 3.11 recommended), ~5 GB free disk.
 # Flutter is NOT required: a prebuilt web console is committed in frontend\prebuilt\web.
-param([int]$Port = 8000)
+param([int]$Port = 0)   # 0 = 8000, or the next free port up to 8010
 # Native tools (py, pip) write warnings to stderr; exit codes are checked explicitly instead.
 $ErrorActionPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'   # Invoke-WebRequest is very slow with the progress bar
@@ -85,10 +85,29 @@ if (-not (Test-Path (Join-Path $Root 'frontend\build\web\index.html')) -and -not
 }
 
 # 5. Start
-$inUse = $false
-try { $t = New-Object Net.Sockets.TcpClient; $t.Connect('127.0.0.1', $Port); $inUse = $true; $t.Close() } catch { }
-if ($inUse) { Die "Port $Port is already in use. Stop the other process or run with -Port 8001" }
-Say "Starting EAGLE EYE on http://localhost:$Port   (API docs: http://localhost:$Port/api/v1/docs, stop with Ctrl+C)"
+# A port counts as busy if anything answers on it over IPv4 or IPv6 (browsers may try ::1 for "localhost").
+function Test-PortBusy([int]$p) {
+  foreach ($a in @(@('InterNetwork', '127.0.0.1'), @('InterNetworkV6', '::1'))) {
+    try {
+      $t = New-Object Net.Sockets.TcpClient([Net.Sockets.AddressFamily]::($a[0]))
+      $ok = $t.ConnectAsync($a[1], $p).Wait(500)
+      $t.Close()
+      if ($ok) { return $true }
+    } catch { }
+  }
+  return $false
+}
+if ($Port -ne 0) {
+  if (Test-PortBusy $Port) { Die "Port $Port is already in use. Stop the other program or choose another: -Port 8001" }
+} else {
+  $Port = 8000
+  while (Test-PortBusy $Port) {
+    if ($Port -ge 8010) { Die 'Ports 8000-8010 are all in use. Choose a free one: -Port 9000' }
+    Say "Port $Port is used by another program; trying $($Port + 1)"
+    $Port++
+  }
+}
+Say "Starting EAGLE EYE - open http://localhost:$Port in your browser   (API docs: /api/v1/docs, stop with Ctrl+C)"
 Say 'Models load in the background; the first inspection on a laptop CPU takes about 1-3 minutes.'
 Push-Location (Join-Path $Root 'backend')
 try { & $VenvPy -m uvicorn app.main:app --host 127.0.0.1 --port $Port } finally { Pop-Location }

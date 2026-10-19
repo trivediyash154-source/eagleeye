@@ -42,7 +42,8 @@ cd eagleeye
 powershell -ExecutionPolicy Bypass -File scripts\run_local.ps1
 ```
 
-Open **<http://localhost:8000>**. The app opens directly in the inspection console (no sign-in);
+Open the address the launcher prints — **<http://localhost:8000>**, or the next free port (8001, …)
+if another program already uses 8000. The app opens directly in the inspection console (no sign-in);
 click **Run sample inspection** on the Overview. The bundled synthetic fixture goes through the
 *live* pipeline (≈1–3 min on a laptop CPU), the live view follows each stage, and the workspace
 opens when it finishes. The product overview page with the 3D scene is at `/welcome`.

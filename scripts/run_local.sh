@@ -3,7 +3,7 @@
 #
 #   ./scripts/run_local.sh               first run: creates .venv, installs deps, downloads model weights
 #   ./scripts/run_local.sh --rebuild     also rebuilds the Flutter web console (needs Flutter 3.47+)
-#   PORT=8080 ./scripts/run_local.sh     different port
+#   PORT=8080 ./scripts/run_local.sh     fixed port (default: 8000, or the next free port up to 8010)
 #
 # Requirements: curl, unzip, ~6 GB free disk (PyTorch). Uses Python 3.11–3.13 if installed; otherwise
 # installs a private Python 3.11 with uv (https://docs.astral.sh/uv) into .tools/ — nothing system-wide.
@@ -11,7 +11,7 @@
 # Flutter is NOT required: a prebuilt web console is committed in frontend/prebuilt/web.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PORT="${PORT:-8000}"
+PORT="${PORT:-}"
 VENV="${EAGLEEYE_VENV:-$ROOT/.venv}"
 
 say() { printf '\033[1;36m[eagle-eye]\033[0m %s\n' "$*"; }
@@ -94,10 +94,33 @@ if [ ! -f "$ROOT/frontend/build/web/index.html" ] && [ ! -f "$ROOT/frontend/preb
 fi
 
 # 5. Start
-if "$VENV/bin/python" -c "import socket,sys; s=socket.socket(); sys.exit(0 if s.connect_ex(('127.0.0.1', int(sys.argv[1]))) == 0 else 1)" "$PORT"; then
-  die "Port $PORT is already in use. Stop the other process or run: PORT=8001 $0"
+# A port counts as busy if anything answers on it over IPv4 or IPv6 (browsers may try ::1 for "localhost").
+port_busy() {
+  "$VENV/bin/python" - "$1" <<'PY'
+import socket, sys
+port = int(sys.argv[1])
+for family, host in ((socket.AF_INET, "127.0.0.1"), (socket.AF_INET6, "::1")):
+    try:
+        with socket.socket(family) as s:
+            s.settimeout(0.5)
+            if s.connect_ex((host, port)) == 0:
+                sys.exit(0)
+    except OSError:
+        pass
+sys.exit(1)
+PY
+}
+if [ -n "$PORT" ]; then
+  port_busy "$PORT" && die "Port $PORT is already in use. Stop the other program or choose another: PORT=8001 $0"
+else
+  PORT=8000
+  while port_busy "$PORT"; do
+    [ "$PORT" -ge 8010 ] && die "Ports 8000-8010 are all in use. Choose a free one: PORT=9000 $0"
+    say "Port $PORT is used by another program; trying $((PORT + 1))"
+    PORT=$((PORT + 1))
+  done
 fi
 cd "$ROOT/backend"
-say "Starting EAGLE EYE on http://localhost:$PORT   (API docs: http://localhost:$PORT/api/v1/docs, stop with Ctrl+C)"
+say "Starting EAGLE EYE — open http://localhost:$PORT in your browser   (API docs: /api/v1/docs, stop with Ctrl+C)"
 say "Models load in the background; the first inspection on a laptop CPU takes about 1–3 minutes."
 exec "$VENV/bin/python" -m uvicorn app.main:app --host 127.0.0.1 --port "$PORT"
